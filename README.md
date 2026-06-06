@@ -9,12 +9,7 @@ Each project folder contains:
 * Screenshots of the workflow in action
 
 ## Projects Format
-| Project | Category | Tools Used |
-|---|Sample|---|
-| Celestinah Cakes Telegram Bot | Customer Support | n8n, Telegram, Gemini |
-| AI Inbox Command Center | Productivity | n8n, Gmail, Gemini |
-| Client Onboarding System | Business Process | n8n, Tally, Notion, Slack |
-| Competitor Intelligence Monitor | Marketing | n8n, RSS, Gemini, Slack |
+| Project | Category | Tools Used | > |---|Sample|---| > | Celestinah Cakes Telegram Bot | Customer Support | n8n, Telegram, Gemini |
 
 ## About
 I design automation systems that reduce manual work, improve operations, 
