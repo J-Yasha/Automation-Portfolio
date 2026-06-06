@@ -1,2 +1,23 @@
-# Automation-Portfolio
-Client-ready automation systems built in n8n across marketing, e-commerce, customer support, and business operations.
+# Automation Portfolio
+AI automation systems built in n8n, designed to solve real business 
+problems for B2B companies in marketing, e-commerce, and professional services.
+
+## What You Will Find Here
+Each project folder contains:
+* The n8n workflow file (.json), ready to import
+* A README explaining the business problem and system solution
+* Screenshots of the workflow in action
+
+## Projects Format
+| Project | Category | Tools Used |
+|---|Sample|---|
+| Celestinah Cakes Telegram Bot | Customer Support | n8n, Telegram, Gemini |
+| AI Inbox Command Center | Productivity | n8n, Gmail, Gemini |
+| Client Onboarding System | Business Process | n8n, Tally, Notion, Slack |
+| Competitor Intelligence Monitor | Marketing | n8n, RSS, Gemini, Slack |
+
+## About
+I design automation systems that reduce manual work, improve operations, 
+and create measurable business value.
+
+Connect with me on LinkedIn: https://www.linkedin.com/in/joshua-ikotun
