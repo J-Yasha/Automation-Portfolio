@@ -1,0 +1,844 @@
+{
+  "name": "AI-Powered Lead Capture & Instant Qualification System",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "QK4Qbl"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        384
+      ],
+      "id": "20d11511-2509-4625-bd2f-76c1a45c157c",
+      "name": "Tally Trigger",
+      "webhookId": "4f2ff52e-90d8-4ccc-94c8-f9bc7d857c16",
+      "credentials": {
+        "tallyApi": {
+          "id": "OwYOVK8u0fgyo6vC",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name: {{ $json.question_1MXPlL.value }}\nEmail: {{ $json.question_MLXKb0.value }}\nCompany: {{ $json.question_JLqK67.value }}\nService: {{ $json.question_gLaj0K.value }}\nBudget: {{ $json.question_yxMZ6W.value }}\nTimeline: {{ $json.question_XELlDV.value }}",
+        "options": {
+          "systemMessage": "You are a lead qualification assistant for a digital marketing \nand automation specialist based in Nigeria.\n\nYour job is to analyze incoming inquiry form submissions and \nassign a qualification score to each lead.\n\nYou will receive the following fields:\n- Full Name\n- Email Address\n- Company Name\n- Service Interest\n- Budget Range\n- Timeline\n\nScoring Rules:\n- HOT: Budget is \"100k - 500k\" or \"500k and above\" AND \n  The timeline is \"Immediately\" or \"Within 1 month.\"\n- WARM: Budget is \"100k - 500k\" or \"500k and above\" AND \n  timeline is \"Just exploring\", OR budget is \"Under 100k.\" \n  AND the timeline is \"Immediately\" or \"Within 1 month.\"\n- COLD: Budget is \"Under 100k\" AND timeline is \n  \"Just exploring\", OR any key field is missing or unclear\n\nInstructions:\n- Analyze the fields provided\n- Assign one score: HOT, WARM, or COLD\n- Write one short reason (maximum 15 words) explaining the score\n- Do not add commentary outside the JSON\n- Do not make assumptions about missing fields; mark them COLD\n\nAlways return your response in this exact JSON format:\n{\n  \"score\": \"HOT\",\n  \"reason\": \"High budget with immediate timeline signals strong purchase intent\"\n}\nBut if the WARM budget is \"Under 100k.\" \n  AND the timeline is \"Immediately\" or \"Within 1 month.\" Then return your response in this exact JSON format:\n{\n  \"score\": \"WARM\",\n  \"Consider\": \"GOOD\",\n  \"reason\": \"Reasonable budget with immediate timeline signals strong purchase intent.\"\n}\n\nIMPORTANT: Return only the JSON. No extra text. No markdown."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        384
+      ],
+      "id": "15e8d581-c60e-49ab-b73d-7dcac228e651",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        304,
+        608
+      ],
+      "id": "dc7622c1-fee4-4bf8-a94e-80ed79c451be",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qo200Jqk3sKp9kAk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\nconst cleaned = raw.replace(/```json\\n?|```/gi, '').trim();\nconst parsed = JSON.parse(cleaned);\n\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        384
+      ],
+      "id": "6d1a7872-b82b-400e-8d0c-78490fdb37e8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ARY5H3RME",
+          "mode": "list",
+          "cachedResultName": "new-clients"
+        },
+        "text": "=🔥 New Qualified Lead Alert!\n\nA new lead has just been captured and qualified. Here are the details:  \n👤 Name: {{ $json['Full Name'] }}\n📧 Email: {{ $json.Email }}\n🏢 Company: {{ $json.Company }}\n🎯 Service Interest: {{ $json['Service Interest'] }}\n💰 Budget: {{ $json.Budget }}\n📅 Timeline: {{ $json.Timeline }}\n📊 Qualification Score: {{ $json.score }}\n💬 Reason: {{ $json.reason }}\n\nAn acknowledgment email has already been sent to the lead. Follow up within 24 hours to keep the momentum.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1696,
+        288
+      ],
+      "id": "2a2a7316-9702-469a-a11f-d0414c2147ee",
+      "name": "Send a message1",
+      "webhookId": "4006316b-49ad-4d9f-8ea9-0792725720a0",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+        "subject": "We received your inquiry, here is what happens next",
+        "emailType": "text",
+        "message": "=Hi {{ $('Tally Trigger').item.json.question_1MXPlL.value }},\n\nThank you for reaching out. I have received your inquiry regarding {{ $('Tally Trigger').item.json.question_gLaj0K.value }}, and I appreciate you taking the time to share your needs.\n\nBased on what you have shared, I believe there is a strong opportunity to build something valuable together. I would like to schedule a short discovery call to better understand your goals and walk you through exactly how I can help.\n\nOn the call, we will cover:\n• Your current challenges and what you are looking to solve\n• The approach I would recommend for your specific situation\n• Next steps, timeline, and how we move forward.\nThe call takes no more than 30 minutes, and there is no obligation on your end.\n\nTo book a time that works for you, reply to this email with your availability or use the link below:\n\n[Booking Link]\n\nI look forward to speaking with you.\n\nBest regards,\nJoshua T. Ikotun",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        192
+      ],
+      "id": "5c24342d-6f20-41cb-ac0e-15e75c686761",
+      "name": "Follow-Up",
+      "webhookId": "d757ee88-6213-4243-b52d-d3f5d92ea3be",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eCNqgbiQt7aY3XFZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Instant Qualification System.n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1038430099,
+          "mode": "list",
+          "cachedResultName": "COLD LEADS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4/edit#gid=1038430099"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Tally Trigger').item.json.question_1MXPlL.value }}",
+            "Email": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+            "Company": "={{ $('Tally Trigger').item.json.question_JLqK67.value }}",
+            "Service Interest": "={{ $('Tally Trigger').item.json.question_gLaj0K.value }}",
+            "Budget": "={{ $('Tally Trigger').item.json.question_yxMZ6W.value }}",
+            "Timeline": "={{ $('Tally Trigger').item.json.question_XELlDV.value }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Interest",
+              "displayName": "Service Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeline",
+              "displayName": "Timeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        576
+      ],
+      "id": "29ffbbd3-5fc3-476f-8657-1a10098d400e",
+      "name": "COLD LEADS",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Instant Qualification System.n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "HOT LEADS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Tally Trigger').item.json.question_1MXPlL.value }}",
+            "Email": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+            "Company": "={{ $('Tally Trigger').item.json.question_JLqK67.value }}",
+            "Service Interest": "={{ $('Tally Trigger').item.json.question_gLaj0K.value }}",
+            "Budget": "={{ $('Tally Trigger').item.json.question_yxMZ6W.value }}",
+            "Timeline": "={{ $('Tally Trigger').item.json.question_XELlDV.value }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Interest",
+              "displayName": "Service Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeline",
+              "displayName": "Timeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        192
+      ],
+      "id": "eca5f428-588c-44dd-b6ca-8c8e4c1e7809",
+      "name": "HOT LEADS",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc91ef4b-86af-4861-b3f7-d6f6b29d6bed",
+              "name": "Full Name",
+              "value": "={{ $('Tally Trigger').item.json.question_1MXPlL.value }}",
+              "type": "string"
+            },
+            {
+              "id": "2314d1d8-cc32-4be7-aad8-77685c3c3bd2",
+              "name": "Email",
+              "value": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+              "type": "string"
+            },
+            {
+              "id": "4fb8e3e3-511f-49ce-89e4-750da812cfb8",
+              "name": "Company",
+              "value": "={{ $('Tally Trigger').item.json.question_JLqK67.value }}",
+              "type": "string"
+            },
+            {
+              "id": "67486ee8-bc9b-4caa-9ab1-774abc4ca443",
+              "name": "Service Interest",
+              "value": "={{ $('Tally Trigger').item.json.question_gLaj0K.value }}",
+              "type": "string"
+            },
+            {
+              "id": "c99aa120-82cb-4fbe-886b-0ab34fed98ab",
+              "name": "Budget",
+              "value": "={{ $('Tally Trigger').item.json.question_yxMZ6W.value }}",
+              "type": "string"
+            },
+            {
+              "id": "909b5cb4-7601-4549-a89b-acd2ed03d3e5",
+              "name": "Timeline",
+              "value": "={{ $('Tally Trigger').item.json.question_XELlDV.value }}",
+              "type": "string"
+            },
+            {
+              "id": "1157bd35-9bb2-4718-a82a-9b87a702c4ae",
+              "name": "score",
+              "value": "={{ $('Code in JavaScript').item.json.score }}",
+              "type": "string"
+            },
+            {
+              "id": "4905ce26-c1f1-48cf-a6fa-63b7f2f297be",
+              "name": "reason",
+              "value": "={{ $('Code in JavaScript').item.json.reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1472,
+        192
+      ],
+      "id": "c314f2a1-a8cb-4ce2-a936-50147e902853",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.score }}",
+                    "rightValue": "HOT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7a714d44-a473-42b0-8d65-def105c446bc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HOT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1ed475cd-3e70-4327-bca8-8bc47b14e04f",
+                    "leftValue": "={{ $json.Consider }}",
+                    "rightValue": "GOOD",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "WARM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0f093331-51b1-4de4-8022-0f22857b0be7",
+                    "leftValue": "={{ $json.score }}",
+                    "rightValue": "COLD",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "COLD"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        368
+      ],
+      "id": "bb440422-a749-400e-9ff7-c563892bc625",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Instant Qualification System.n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 313216128,
+          "mode": "list",
+          "cachedResultName": "WARM LEADS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cwuGc1vpnmWbEDIZzYtBcIYMP5HiKqUskJ4KKyh7Rb4/edit#gid=313216128"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Tally Trigger').item.json.question_1MXPlL.value }}",
+            "Email": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+            "Company": "={{ $('Tally Trigger').item.json.question_JLqK67.value }}",
+            "Service Interest": "={{ $('Tally Trigger').item.json.question_gLaj0K.value }}",
+            "Budget": "={{ $('Tally Trigger').item.json.question_yxMZ6W.value }}",
+            "Timeline": "={{ $('Tally Trigger').item.json.question_XELlDV.value }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Interest",
+              "displayName": "Service Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeline",
+              "displayName": "Timeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        384
+      ],
+      "id": "c6955019-57a6-4055-b60b-8da34e2be758",
+      "name": "WARM LEADS",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc91ef4b-86af-4861-b3f7-d6f6b29d6bed",
+              "name": "Full Name",
+              "value": "={{ $('Tally Trigger').item.json.question_1MXPlL.value }}",
+              "type": "string"
+            },
+            {
+              "id": "efeb66f5-7d8e-4ebb-a4da-15482219c0e2",
+              "name": "Email",
+              "value": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+              "type": "string"
+            },
+            {
+              "id": "4fb8e3e3-511f-49ce-89e4-750da812cfb8",
+              "name": "Company",
+              "value": "={{ $('Tally Trigger').item.json.question_JLqK67.value }}",
+              "type": "string"
+            },
+            {
+              "id": "67486ee8-bc9b-4caa-9ab1-774abc4ca443",
+              "name": "Service Interest",
+              "value": "={{ $('Tally Trigger').item.json.question_gLaj0K.value }}",
+              "type": "string"
+            },
+            {
+              "id": "c99aa120-82cb-4fbe-886b-0ab34fed98ab",
+              "name": "Budget",
+              "value": "={{ $('Tally Trigger').item.json.question_yxMZ6W.value }}",
+              "type": "string"
+            },
+            {
+              "id": "909b5cb4-7601-4549-a89b-acd2ed03d3e5",
+              "name": "Timeline",
+              "value": "={{ $('Tally Trigger').item.json.question_XELlDV.value }}",
+              "type": "string"
+            },
+            {
+              "id": "1157bd35-9bb2-4718-a82a-9b87a702c4ae",
+              "name": "score",
+              "value": "={{ $('Code in JavaScript').item.json.score }}",
+              "type": "string"
+            },
+            {
+              "id": "4905ce26-c1f1-48cf-a6fa-63b7f2f297be",
+              "name": "reason",
+              "value": "={{ $('Code in JavaScript').item.json.reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1472,
+        384
+      ],
+      "id": "12fa7f4a-5913-400b-8e04-c0ff053d815d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Tally Trigger').item.json.question_MLXKb0.value }}",
+        "subject": "We received your inquiry – let’s discuss your goals",
+        "emailType": "text",
+        "message": "=Hi {{ $('Tally Trigger').item.json.question_1MXPlL.value }},\n\nThank you for reaching out and sharing details about your interest in {{ $('Tally Trigger').item.json.question_gLaj0K.value }}.\n\nBased on the information you provided, I believe there’s good potential for us to work together. I’d love to learn more about your goals, timeline, and requirements so I can recommend the most suitable approach for your situation.\n\nIf you’d like to explore the possibilities, we can schedule a short, no-obligation discovery call where we’ll discuss:\n\n• What you’re looking to achieve\n• The challenges you’re currently facing\n• Possible solutions and recommendations\n• Expected timeline and next steps\n\nThe conversation typically takes around 20–30 minutes and is simply an opportunity to see whether we’re the right fit.\n\nYou can reply to this email with your availability or book a convenient time using the link below:\n\n[Booking Link]\n\nI look forward to hearing more about your project and exploring how I can help.\n\nBest regards,\nJoshua T. Ikotun",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        384
+      ],
+      "id": "d2f230de-2950-447e-8ba5-0599cd2388fd",
+      "name": "Follow Up",
+      "webhookId": "d757ee88-6213-4243-b52d-d3f5d92ea3be",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "eCNqgbiQt7aY3XFZ",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "HOT LEADS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HOT LEADS": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Follow Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "COLD LEADS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WARM LEADS": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow Up": {
+      "main": [
+        [
+          {
+            "node": "WARM LEADS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Africa/Lagos",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "5284fcaf-5485-4730-9c61-f4e004231f2a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "id": "GYJlCUF5Jmc0wINd",
+  "tags": []
+}
