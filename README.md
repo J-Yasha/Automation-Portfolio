@@ -8,8 +8,10 @@ Each project folder contains:
 * A README explaining the business problem and system solution
 * Screenshots of the workflow in action
 
-## Projects Format
-| Project | Category | Tools Used | > |---|Sample|---| > | Celestinah Cakes Telegram Bot | Customer Support | n8n, Telegram, Gemini |
+## Projects
+Browse all projects by category in the folders above.
+Each project folder contains a full README, workflow file,
+and execution screenshots.
 
 ## About
 I design automation systems that reduce manual work, improve operations, 
