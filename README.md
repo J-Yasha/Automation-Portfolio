@@ -9,7 +9,7 @@ Each project folder contains:
 * Screenshots of the workflow in action
 
 ## Projects
-Browse all projects by category in the folders above.
+Browse all projects by category in the folders above. 
 Each project folder contains a full README, workflow file,
 and execution screenshots.
 
