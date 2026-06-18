@@ -1,0 +1,445 @@
+{
+  "name": "E-Commerce Order Confirmation & Fulfillment Notification System",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1aa1495-c27c-483e-b979-74861557a97b",
+              "leftValue": "={{ $json['Amount Paid'] }}",
+              "rightValue": 500,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        304
+      ],
+      "id": "b0dd4827-9bb1-4c7d-89ae-883e675cf899",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "48aae0a3-37fd-4546-a02c-53f636873d57",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        304
+      ],
+      "id": "f0b9d3aa-aa20-49b2-9954-f5e37c0c0cd6",
+      "name": "Webhook",
+      "webhookId": "48aae0a3-37fd-4546-a02c-53f636873d57"
+    },
+    {
+      "parameters": {
+        "jsCode": "const orderDetails = {\n  orderNumber: Number($json.body.order_number), // e.g. 1002\n\n  orderDate: $json.body.created_at.split(\"T\")[0], // e.g. 2026-06-17\n  orderTime: $json.body.created_at.split(\"T\")[1].split(\"-\")[0], // e.g. 10:19:57\n\n  contactInformation: {\n    email: $json.body.contact_email,\n    phone: $json.body.phone || $json.body.shipping_address?.phone || \"Not provided\",\n  },\n\n  shoppersName: $json.body.shipping_address?.name,\n\n  shippingAddress: {\n    street: $json.body.shipping_address?.address1,\n    city: $json.body.shipping_address?.city,\n    state: $json.body.shipping_address?.province,\n    zipCode: $json.body.shipping_address?.zip,\n    country: $json.body.shipping_address?.country,\n  },\n\n  itemOrdered: $json.body.line_items?.map(item => ({\n    productName: item.name,\n    quantity: Number(item.quantity),\n    unitPrice: Number(item.price),\n  })),\n\n  shippingMethod: $json.body.shipping_lines?.[0]?.title,\n\n  paymentMethod: $json.body.payment_gateway_names?.[0],\n\n  totalAmountPaid: Number($json.body.current_total_price),\n};\n\nreturn [{ json: orderDetails }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        304
+      ],
+      "id": "f8249e15-f9bb-4579-8f02-16d1c6190320",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.contactInformation.email }}",
+        "subject": "Your Order Has Been Received, Here Is What Happens Next",
+        "emailType": "text",
+        "message": "=Hi {{ $json.shoppersName }},\n\nThank you for your order. We have received it and our team is already on it.\n\nHere is a summary of your order:\nOrder Number: {{ $json.orderNumber }}\n\nItems Ordered: {{ $json.itemOrdered[0].productName }}\n\nDelivery Address: {{ $json.shippingAddress.country }}, {{ $json.shippingAddress.state }}, {{ $json.shippingAddress.city }}, {{ $json.shippingAddress.street }}, {{ $json.shippingAddress.zipCode }}\n\nOrder Total: ₦{{ $json.totalAmountPaid }}\n\nWhat happens next:\n1. Our fulfillment team has been notified and will begin processing your order immediately.\n2. You will receive a shipping update once your order is on its way.\n3. If you have any questions in the meantime, simply reply to this email.\n\nWe appreciate your trust in us and look forward to delivering an excellent experience.\n\nBest regards,\nJoshua T. Ikotun",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        304
+      ],
+      "id": "ec49b45d-25f1-4737-8461-d12cc29ad943",
+      "name": "Follow-Up",
+      "webhookId": "58017f67-18ce-484e-a4fb-b84e68883071",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1QtANUHDOZqtHT8Y76WnvAvFvmlJr3M07zj81abyvlCM",
+          "mode": "list",
+          "cachedResultName": "E-Commerce Order Confirmation & Fulfillment Notification System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QtANUHDOZqtHT8Y76WnvAvFvmlJr3M07zj81abyvlCM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QtANUHDOZqtHT8Y76WnvAvFvmlJr3M07zj81abyvlCM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Code in JavaScript').item.json.shoppersName }}",
+            "Order Number": "={{ $('Code in JavaScript').item.json.orderNumber }}",
+            "Email": "={{ $('Code in JavaScript').item.json.contactInformation.email }}",
+            "Items Ordered": "={{ $('Code in JavaScript').item.json.itemOrdered[0].productName }}",
+            "Shipping method": "={{ $('Code in JavaScript').item.json.shippingMethod }}",
+            "Delivery Address": "={{ $('Code in JavaScript').item.json.shippingAddress.country }}, {{ $('Code in JavaScript').item.json.shippingAddress.state }},{{ $('Code in JavaScript').item.json.shippingAddress.city }}, {{ $('Code in JavaScript').item.json.shippingAddress.street }}, {{ $('Code in JavaScript').item.json.shippingAddress.zipCode }}",
+            "Amount Paid": "={{ $('Code in JavaScript').item.json.totalAmountPaid }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Number",
+              "displayName": "Order Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Items Ordered",
+              "displayName": "Items Ordered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Delivery Address",
+              "displayName": "Delivery Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Shipping method",
+              "displayName": "Shipping method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount Paid",
+              "displayName": "Amount Paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        304
+      ],
+      "id": "723fe590-9be1-418d-bb06-29fcf941f553",
+      "name": "Logged Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBJUW04MP",
+          "mode": "list",
+          "cachedResultName": "fulfillment-teams"
+        },
+        "text": "=📦 New Order Received  \nA new order has just been placed and is ready for processing.  \n👤 Customer: {{ $('Edit Fields').item.json.shoppersName }}\n\n📧 Email: {{ $('Edit Fields').item.json.contactInformation.email }}\n\n🔢 Order Number: {{ $('Edit Fields').item.json.orderNumber }}\n\n🛍️ Items Ordered: {{ $('Edit Fields').item.json.itemOrdered[0].productName }}\n\n📍 Delivery Address: {{ $('Edit Fields').item.json.shippingAddress.country }}, {{ $('Edit Fields').item.json.shippingAddress.state }}, {{ $('Edit Fields').item.json.shippingAddress.city }}, {{ $('Edit Fields').item.json.shippingAddress.street }}, {{ $('Edit Fields').item.json.shippingAddress.zipCode }}\n\n💰 Order Total: {{ $('Edit Fields').item.json.totalAmountPaid }}\n\n⏰ Order Time: {{ $('Edit Fields').item.json.orderDate }}  \n\nPlease begin processing immediately.  \nA confirmation email has already been sent to the customer.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1344,
+        400
+      ],
+      "id": "ed3a4fde-63b9-4c8a-8a31-93662bbc73a5",
+      "name": "Standard Order",
+      "webhookId": "31cd6eda-b580-4a00-963c-7358d112f936",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BB1KMB0LF",
+          "mode": "list",
+          "cachedResultName": "senior-teams"
+        },
+        "text": "=🔥 High-Value Order Alert\nA high-value order has just been placed and requires priority attention.\n👤 Customer: {{ $('Edit Fields').item.json.shoppersName }}\n\n📧 Email: {{ $('Edit Fields').item.json.contactInformation.email }}\n\n🔢 Order Number: {{ $('Edit Fields').item.json.orderNumber }}\n\n🛍️ Items Ordered: {{ $('Edit Fields').item.json.itemOrdered[0].productName }}\n\n📍 Delivery Address: {{ $('Edit Fields').item.json.shippingAddress.country }}, {{ $('Edit Fields').item.json.shippingAddress.state }}, {{ $('Edit Fields').item.json.shippingAddress.city }}, {{ $('Edit Fields').item.json.shippingAddress.street }}, {{ $('Edit Fields').item.json.shippingAddress.zipCode }}\n\n💰 Order Total: {{ $('Edit Fields').item.json.totalAmountPaid }}\n\n⏰ Order Time: {{ $('Edit Fields').item.json.orderDate }}\n\n⚠️ This order exceeds the high-value threshold and requires senior review.\nPlease ensure this order is prioritized and handled with extra care.\nA confirmation email has already been sent to the customer.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1344,
+        208
+      ],
+      "id": "ff2267b5-c970-454d-9e13-efe1e6b9d650",
+      "name": "High-Value Order",
+      "webhookId": "31cd6eda-b580-4a00-963c-7358d112f936",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8b34b500-e2f9-4425-8cc2-5dccbc827f94",
+              "name": "orderNumber",
+              "value": "={{ $json.orderNumber }}",
+              "type": "number"
+            },
+            {
+              "id": "4c4593c8-0c56-47ab-9a2f-0821c44cf83c",
+              "name": "orderDate",
+              "value": "={{ $json.orderDate }}",
+              "type": "string"
+            },
+            {
+              "id": "58af36fc-3c37-467a-b161-38366d1be3d6",
+              "name": "contactInformation.email",
+              "value": "={{ $json.contactInformation.email }}",
+              "type": "string"
+            },
+            {
+              "id": "61cdc122-3335-47d6-b2cb-3abdcd1897cc",
+              "name": "shoppersName",
+              "value": "={{ $json.shoppersName }}",
+              "type": "string"
+            },
+            {
+              "id": "d1d97aa3-c97f-4f48-a16c-b1a40fbd5e62",
+              "name": "shippingAddress",
+              "value": "={{ $json.shippingAddress }}",
+              "type": "object"
+            },
+            {
+              "id": "1f642233-33e8-4881-9cf8-be38fbefd45a",
+              "name": "itemOrdered[0].productName",
+              "value": "={{ $json.itemOrdered[0].productName }}",
+              "type": "string"
+            },
+            {
+              "id": "0a4d2db5-4652-4b8d-b436-f59aae7bcaa3",
+              "name": "itemOrdered[0].unitPrice",
+              "value": "={{ $json.itemOrdered[0].unitPrice }}",
+              "type": "number"
+            },
+            {
+              "id": "6718893c-d2f8-478b-adef-d3447c8aa7b2",
+              "name": "shippingMethod",
+              "value": "={{ $json.shippingMethod }}",
+              "type": "string"
+            },
+            {
+              "id": "a1e3955b-3349-4d6f-8305-29849755fb1d",
+              "name": "paymentMethod",
+              "value": "={{ $json.paymentMethod }}",
+              "type": "string"
+            },
+            {
+              "id": "9c14519a-79b5-4acf-8cc5-4df734df17ee",
+              "name": "totalAmountPaid",
+              "value": "={{ $json.totalAmountPaid }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        304
+      ],
+      "id": "408756f9-3340-4af7-a25c-2d1642889b09",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "High-Value Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Standard Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Logged Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logged Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "32f0756f-2f69-4144-a206-d164e8431de0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "I7XMGeXnMAnTcizx",
+  "tags": []
+}
