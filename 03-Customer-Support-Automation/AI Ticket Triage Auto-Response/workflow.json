@@ -1,0 +1,627 @@
+{
+  "name": "Customer Support Ticket Triage & Auto-Response System",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "Pd491Q"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dd917ee9-8f4a-4a76-9ced-4dd2ed919df9",
+      "name": "Tally Trigger",
+      "webhookId": "fb5558ae-1a2e-407a-8f8e-77ed40dcdae6",
+      "credentials": {
+        "tallyApi": {
+          "id": "OwYOVK8u0fgyo6vC",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name:  {{ $json.question_0LLM00.value }}\nEmail: {{ $json.question_zZZzB8.value }}\nOrder Number: {{ $json.question_5LLk0P.value }}\nIssue Description: {{ $json.question_dllAGy.value }}",
+        "options": {
+          "systemMessage": "You are a helpful You are a customer support triage assistant for a business \nthat sells products and services.\n\nYour job is to read incoming customer support messages and do \ntwo things: classify the issue and generate an appropriate response.\n\nClassification Rules:\n\nCATEGORY:\n- billing: payment issues, refunds, incorrect charges, invoices\n- delivery: shipping delays, wrong items, missing orders, tracking\n- technical: product not working, login issues, bugs, errors\n- general: questions, feedback, compliments, anything else\n\nPRIORITY:\n- urgent: customer is angry, threatening to leave, reporting \n  a financial loss, or has a time-sensitive issue\n- normal: customer needs help but the issue is not time-critical\n- low: general questions, feedback, or issues with easy answers\n\nResponse Rules:\n- For low and normal priority tickets, generate a helpful, \n  professional, and empathetic response that resolves \n  the issue directly\n- For urgent tickets, generate a brief acknowledgment response only; do not attempt to resolve it. A human will follow up\n- Don't start with a \"Hi\" or the person's name (e.g., \"Hi Joshua\" or \"Joshua\"); go straight to the point instead (example: A member of our support team has been notified and will reach out to you directly within the hour to resolve this personally).\n- Keep responses concise and clear\n- Do not make up information you do not have\n\nAlways return your response in this exact JSON format:\n{\n  \"category\": \"billing\",\n  \"priority\": \"normal\",\n  \"ai_response\": \"your response to the customer here\"\n}\n\nIMPORTANT: Return only the JSON. No extra text. No markdown fences."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "f41b7e60-2319-4719-bbd6-6ba6dc182528",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        224
+      ],
+      "id": "5cc2bd5d-f8bc-44a4-a0f2-4f46e4544f8a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qo200Jqk3sKp9kAk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "787ddb0c-991c-4e48-993e-dd64f26ecd9d",
+              "leftValue": "={{ $json.Priority }}",
+              "rightValue": "urgent",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "b3d48ac7-25e2-46be-9a32-07ecdb94f78e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const parsed = JSON.parse($json.output);\n\nreturn [\n  {\n    json: {\n      category: parsed.category,\n      priority: parsed.priority,\n      ai_response: parsed.ai_response,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "bd08d832-e9d4-466e-b287-1fb7ce284d27",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0aac2639-99f8-46b0-8e92-5a64e0d3de72",
+              "name": "Timestamp",
+              "value": "={{ $('Tally Trigger').item.json.createdAt }}",
+              "type": "string"
+            },
+            {
+              "id": "3c6f49db-24c2-4114-9fbb-1c39c04a4269",
+              "name": "Category",
+              "value": "={{ $json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "234f4477-c4d1-4dec-8431-7744e82bf1e7",
+              "name": "Priority",
+              "value": "={{ $json.priority }}",
+              "type": "string"
+            },
+            {
+              "id": "d6b55ce8-9b5b-4e73-88ed-fef6e47ba098",
+              "name": "Ai Response",
+              "value": "={{ $json.ai_response }}",
+              "type": "string"
+            },
+            {
+              "id": "d1fde807-5c8f-418e-9911-470472561769",
+              "name": "Full Name",
+              "value": "={{ $('Tally Trigger').item.json.question_0LLM00.value }}",
+              "type": "string"
+            },
+            {
+              "id": "8b4d0c59-1e8a-4f7e-97ee-525cfaa00507",
+              "name": "Email",
+              "value": "={{ $('Tally Trigger').item.json.question_zZZzB8.value }}",
+              "type": "string"
+            },
+            {
+              "id": "e3a067c4-e207-4fe5-8203-a367dc9fb843",
+              "name": "Order Number",
+              "value": "={{ $('Tally Trigger').item.json.question_5LLk0P.value }}",
+              "type": "string"
+            },
+            {
+              "id": "012dea2f-0dd7-4734-ae9d-18cc9447d810",
+              "name": "Issue Description",
+              "value": "={{ $('Tally Trigger').item.json.question_dllAGy.value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        0
+      ],
+      "id": "ccf80e23-af8e-4c46-aa97-05ab80b302f2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.Email }}",
+        "subject": "We Have Received Your Message, Here Is What You Need to Know",
+        "emailType": "text",
+        "message": "=Hi {{ $('Edit Fields').item.json['Full Name'] }},\n\nThank you for reaching out to us. We have received your message, and we are happy to help.\n\nRegarding your issue: {{ $('Edit Fields').item.json['Ai Response'] }}\n\nIf you have any further questions or your issue is not fully resolved, reply to this email, and we will get back to you promptly.\n\nWe appreciate your patience and thank you for being a valued customer.\n\nBest regards,\nJoshua T. Ikotun\nCustomer Support",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        96
+      ],
+      "id": "be10bff1-c67e-4652-9df8-7152e3314713",
+      "name": "Customer Message",
+      "webhookId": "0e648f2f-75fb-43c5-b791-fab548a903de",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BB1KMB0LF",
+          "mode": "list",
+          "cachedResultName": "senior-teams"
+        },
+        "text": "=🚨 Urgent Support Ticket Requires Immediate Attention\n\nA customer has submitted an urgent support request that requires human follow-up. Please action this immediately.\n\n👤 Customer Name: {{ $json['Full Name'] }}\n\n📧 Email: {{ $json.Email }}\n\n🔢 Order Number: {{ $json['Order Number'] }}\n\n📂 Category: {{ $json.Category }}\n\n⚠️ Priority: URGENT!!!\n\n🕐 Submitted At: {{ $json.Timestamp }}\n\n📝 Issue Description: \"{{ $json['Issue Description'] }}\"\n\n🤖 AI Classification Reason: \"{{ $json['Ai Response'] }}\"\n",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "e1c794b1-2867-4c01-8c76-d8947a082b87",
+      "name": "Team Escalation Message",
+      "webhookId": "5c29ebc8-0b0d-4000-a407-bab5d5506a2a",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1DSWzHflWPE1m3ZV9JLmD9bs3lAp_UeaursOyr0ymtPo",
+          "mode": "list",
+          "cachedResultName": "Customer Support Ticket Triage & Auto-Response System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DSWzHflWPE1m3ZV9JLmD9bs3lAp_UeaursOyr0ymtPo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "URENT ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DSWzHflWPE1m3ZV9JLmD9bs3lAp_UeaursOyr0ymtPo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('Edit Fields').item.json['Full Name'] }}",
+            "Email": "={{ $('Edit Fields').item.json.Email }}",
+            "Order Number": "={{ $('Edit Fields').item.json['Order Number'] }}",
+            "Category": "={{ $('Edit Fields').item.json.Category }}",
+            "Priority": "={{ $('Edit Fields').item.json.Priority }}",
+            "Submitted At": "={{ $('Edit Fields').item.json.Timestamp }}",
+            "AI Response": "={{ $('Edit Fields').item.json['Ai Response'] }}",
+            "Issue Description": "={{ $('Edit Fields').item.json['Issue Description'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Number",
+              "displayName": "Order Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submitted At",
+              "displayName": "Submitted At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Issue Description",
+              "displayName": "Issue Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Response",
+              "displayName": "AI Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "6ba89abb-1796-41ca-a3f2-f17b34a754a0",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json.Email }}",
+        "subject": "We Are On It, Someone From Our Team Will Reach Out To You Shortly",
+        "emailType": "text",
+        "message": "=Hi {{ $('Edit Fields').item.json['Full Name'] }},\n\nThank you for contacting us. We have received your message and we understand the urgency of your situation.\n\n{{ $('Edit Fields').item.json['Ai Response'] }}\n\nWe sincerely apologize for the inconvenience and we appreciate your patience.\n\nBest regards,\nJoshua T. Ikotun\nCustomer Support",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "9588be30-affa-4534-be5e-2c3393ec8266",
+      "name": "Customer-Message",
+      "webhookId": "0e648f2f-75fb-43c5-b791-fab548a903de",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1DSWzHflWPE1m3ZV9JLmD9bs3lAp_UeaursOyr0ymtPo",
+          "mode": "list",
+          "cachedResultName": "Customer Support Ticket Triage & Auto-Response System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DSWzHflWPE1m3ZV9JLmD9bs3lAp_UeaursOyr0ymtPo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 306729560,
+          "mode": "list",
+          "cachedResultName": "NORMAL & LOW",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DSWzHflWPE1m3ZV9JLmD9bs3lAp_UeaursOyr0ymtPo/edit#gid=306729560"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('Edit Fields').item.json['Full Name'] }}",
+            "Email": "={{ $('Edit Fields').item.json.Email }}",
+            "Order Number": "={{ $('Edit Fields').item.json['Order Number'] }}",
+            "Category": "={{ $('Edit Fields').item.json.Category }}",
+            "Submitted At": "={{ $('Edit Fields').item.json.Timestamp }}",
+            "Priority": "={{ $('Edit Fields').item.json.Priority }}",
+            "Issue Description": "={{ $('Edit Fields').item.json['Issue Description'] }}",
+            "AI Response": "={{ $('Edit Fields').item.json['Ai Response'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order Number",
+              "displayName": "Order Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submitted At",
+              "displayName": "Submitted At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Issue Description",
+              "displayName": "Issue Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Response",
+              "displayName": "AI Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1472,
+        96
+      ],
+      "id": "b24cc05d-da4f-49a5-a6f6-08df5a59f733",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Team Escalation Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Customer Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team Escalation Message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer-Message": {
+      "main": [
+        []
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Customer-Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "86c283b5-986c-4ac8-b8b0-cf32823763a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "mbTMQryby4lo9lRx",
+  "tags": []
+}
