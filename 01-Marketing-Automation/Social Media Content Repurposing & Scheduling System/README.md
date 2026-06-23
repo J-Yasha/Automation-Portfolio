@@ -61,6 +61,10 @@ approval before scheduling.
   content, and review status populated automatically
 - Full content package delivered to the team via Slack with 
   clear visual formatting for easy review
+- Merge node consolidates all three platform logging 
+  branches before triggering the Slack notification, 
+  ensuring the team alert only fires after all content 
+  has been successfully logged to the content calendar
 
 ## Business Impact
 
@@ -86,6 +90,9 @@ approval before scheduling.
   controlled by form selection only
 - System generates one set of outputs per submission, 
   no A/B variation in this version
+- Switch node functions as a pass-through rather than 
+  a true conditional router since all three content 
+  fields are always populated on successful AI execution
 
 ## Planned Improvements
 
