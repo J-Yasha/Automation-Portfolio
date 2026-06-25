@@ -1,0 +1,1082 @@
+{
+  "name": "Invoice Generation & Payment Follow-Up System",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "0QG0Wy"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -880
+      ],
+      "id": "227bf9fa-0db8-40b1-bb87-55c0d9e616d9",
+      "name": "Tally Trigger",
+      "webhookId": "ba1bfa1d-607e-4d5b-83b5-a91c94dcf77d",
+      "credentials": {
+        "tallyApi": {
+          "id": "OwYOVK8u0fgyo6vC",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0",
+          "mode": "list",
+          "cachedResultName": "Invoice Generation & Payment Follow-Up System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $('Tally Trigger').item.json.question_jLGAjE.value }}",
+            "Email Address": "={{ $('Tally Trigger').item.json.question_2LOGpV.value }}",
+            "Service Description": "={{ $('Tally Trigger').item.json.question_x295Ao.value }}",
+            "Amount": "={{ $('Tally Trigger').item.json.question_RR8yAl.value }}",
+            "Currency": "={{ $('Tally Trigger').item.json.question_oolLq1.value }}",
+            "Date Sent": "={{ $json['Date Sent'] }}",
+            "Due Date": "={{ $json['Due Date'] }}",
+            "Invoice ID": "={{ $json['Invoice Reference'] }}",
+            "Due Date Reminder": "PENDING",
+            "Payment Status": "UNPAID"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Description",
+              "displayName": "Service Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Sent",
+              "displayName": "Date Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date",
+              "displayName": "Due Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date Reminder",
+              "displayName": "Due Date Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -880
+      ],
+      "id": "52fd2658-0dd8-4ed1-88e1-1a40f5383e95",
+      "name": "LOG INVOICE",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sentDate = new Date($json.createdAt);\n\nconst dueDate = new Date(sentDate);\ndueDate.setDate(dueDate.getDate() + 8);\n\nconst formatDate = (date) => {\n  const day = String(date.getDate()).padStart(2, \"0\");\n  const month = String(date.getMonth() + 1).padStart(2, \"0\");\n  const year = date.getFullYear();\n  return `${day}/${month}/${year}`;\n};\n\nconst invoiceReference = `INV-${sentDate.getFullYear()}-${$json.id}`;\n\nreturn [\n  {\n    json: {\n      \"Invoice Reference\": invoiceReference,\n      \"Date Sent\": formatDate(sentDate),\n      \"Due Date\": formatDate(dueDate),\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -880
+      ],
+      "id": "aa8edd06-99d2-46b5-91d4-bd584a0e5c05",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBJUW04MP",
+          "mode": "list",
+          "cachedResultName": "standard-teams"
+        },
+        "text": "=🧾 Invoice Sent\nA new invoice has just been issued to a client.\n\n👤 Client: {{ $json['Client Name'] }}\n\n📧 Email: {{ $json['Email Address'] }}\n\n📋 Service: {{ $json['Service Description'] }}\n\n💰 Amount: {{ $json.Currency }}{{ $json.Amount }}\n\n🪪 Invoice ID: {{ $json['Invoice ID'] }}\n\n🕐 Sent At: {{ $json['Date Sent'] }}\n\n📅 Due Date: {{ $json['Due Date'] }}\n\n📊 Payment Status: {{ $json['Payment Status'] }}\n\nThe invoice has been logged to the payment tracker. Monitor for payment confirmation and update the status in Google Sheets once payment is received.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        864,
+        -880
+      ],
+      "id": "4a17c198-74c2-4df6-b557-c2e8d15e0fda",
+      "name": "Team",
+      "webhookId": "058c3741-094c-4513-aef4-1058467e15e4",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "dc07d0d1-2247-48c6-9947-ceaf0456404b",
+              "leftValue": "={{ $json['Second Reminder Status'] }}",
+              "rightValue": "SEND",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1696,
+        -384
+      ],
+      "id": "63c8a1e7-5337-4656-bfe4-509090cee5e8",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "264b670b-c079-4a9b-a350-25d3a2799802",
+              "leftValue": "={{ $json['Due Date Reminder'] }}",
+              "rightValue": "DUE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1696,
+        -576
+      ],
+      "id": "355bfb44-05b6-4f68-b038-24c077cf88ce",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBJUW04MP",
+          "mode": "list",
+          "cachedResultName": "standard-teams"
+        },
+        "text": "=⚠️ Overdue Invoice Follow-Up Triggered\n\nAn automatic payment reminder has been sent to a client with an overdue invoice.\n\n👤 Client: {{ $('If1').item.json['Client Name'] }}\n\n📧 Email: {{ $('If1').item.json['Email Address'] }}\n\n📋 Service: {{ $('If1').item.json['Service Description'] }}\n\n💰 Amount: {{ $('If1').item.json.Currency }}{{ $('If1').item.json.Amount }}\n\n📅 Due Date: {{ $('If1').item.json['Due Date'] }}\n\n🔔 Reminder Stage: Reminder 1\n\n📊 Payment Status: {{ $('If1').item.json['Payment Status'] }}\n\nPlease monitor this invoice closely. If no payment is received after Reminder 2, escalate directly to the business owner.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        2144,
+        -576
+      ],
+      "id": "abf97143-97d1-469d-8545-95f9e25e198c",
+      "name": "Team1",
+      "webhookId": "058c3741-094c-4513-aef4-1058467e15e4",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBJUW04MP",
+          "mode": "list",
+          "cachedResultName": "standard-teams"
+        },
+        "text": "=🚨 Escalation Required: Invoice Still Unpaid After Two Reminders\n\nA client has not responded to either payment reminder and requires immediate attention from the business owner.\n\n👤 Client: {{ $('If2').item.json['Client Name'] }}\n\n📧 Email: {{ $('If2').item.json['Email Address'] }}\n\n📋 Service: {{ $('If2').item.json['Service Description'] }}\n\n💰 Amount: {{ $('If2').item.json.Currency }}{{ $('If2').item.json.Amount }}\n\n📅 Due Date: {{ $('If2').item.json['Due Date'] }}\n\n🔔 Reminders Sent: 2nd\n\n📊 Payment Status: {{ $('If2').item.json['Payment Status'] }}\n\nBoth automated reminders have been exhausted. This invoice has been outstanding since [Due Date] with no payment or response received.\n\nPlease escalate directly and contact this client personally to resolve the outstanding payment before it affects the business relationship.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        2144,
+        -384
+      ],
+      "id": "75e9d0ba-e77c-4bf8-9ec5-5847dde2fe34",
+      "name": "Team2",
+      "webhookId": "5f0d737a-9672-48c1-aa5e-c6c2d41d321b",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e78cc8fe-27a3-4d38-8f29-635412ff79e3",
+              "leftValue": "={{ $json['Due Date Reminder'] }}",
+              "rightValue": "PENDING",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        -480
+      ],
+      "id": "5b91b951-55d6-4065-9591-fae852d9d324",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email Address'] }}",
+        "subject": "=Second Notice: Invoice {{ $json['Invoice ID'] }} Now Overdue",
+        "emailType": "text",
+        "message": "=Hi {{ $json['Client Name'] }},\nI am following up again regarding invoice {{ $json['Invoice ID'] }} for \"{{ $json['Service Description'] }}\" in the amount of {{ $json.Currency }}{{ $json.Amount }}, which was due on {{ $json['Due Date'] }} and remains unpaid.\n\nWe have not received payment or a response to our previous reminder, and we would like to resolve this promptly..\n\nKindly process the payment immediately or reply to this email to discuss any concerns you may have. Continued delay may affect our ability to proceed with future work together.\n\nWe look forward to your prompt response.\n\nBest regards,\nJoshua T. Ikotun",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -384
+      ],
+      "id": "87c8b2bb-3a3b-4124-9c9f-430d037c94e8",
+      "name": "2nd Reminder",
+      "webhookId": "be56ac42-42f4-45e1-9b8e-e201e0b2ec5f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email Address'] }}",
+        "subject": "=Friendly Reminder: Invoice {{ $json['Invoice ID'] }} Due on {{ $json['Due Date'] }}",
+        "emailType": "text",
+        "message": "=Hi {{ $json['Client Name'] }},\nI hope you are doing well.\n\nThis is a friendly reminder that invoice {{ $json['Invoice ID'] }} for \"{{ $json['Service Description'] }}\" amounting to {{ $json.Currency }}{{ $json.Amount }} was due on {{ $json['Due Date'] }} and is yet to be settled.\n\nIf you have already made the payment, please disregard this message and kindly send a confirmation so we can update our records.\n\nIf not, please process the payment at your earliest convenience.\n\nPlease do not hesitate to reach out if you have any questions or concerns regarding this invoice.\n\nBest regards,\nJoshua T. Ikotun",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -576
+      ],
+      "id": "39078d5b-3b68-4885-ae3f-9dac1d1cc298",
+      "name": "1st Reminder",
+      "webhookId": "be56ac42-42f4-45e1-9b8e-e201e0b2ec5f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Takes the invoice's Due Date (dd/mm/yyyy).\n// 2. Adds 7 days to it.\n// 3. Compares the resulting date with today's date.\n// 4. If today's date matches the Due Date + 7 days, sets the reminder to \"SEND\".\n// 5. Otherwise, sets the reminder to \"DON'T SEND\".\n// 6. Returns all invoice data along with the new reminder status.\n\nconst today = new Date();\n\nconst formatDate = (date) => {\n  const day = String(date.getDate()).padStart(2, \"0\");\n  const month = String(date.getMonth() + 1).padStart(2, \"0\");\n  const year = date.getFullYear();\n  return `${day}/${month}/${year}`;\n};\n\nconst todayFormatted = formatDate(today);\n\nreturn $input.all().map(item => {\n  const dueDateString = item.json[\"Due Date\"];\n\n  const [day, month, year] = dueDateString.split(\"/\").map(Number);\n\n  const dueDate = new Date(year, month - 1, day);\n\n  // Add 7 days to the Due Date\n  dueDate.setDate(dueDate.getDate() + 7);\n\n  const reminderDate = formatDate(dueDate);\n\n  return {\n    json: {\n      ...item.json,\n      \"Second Reminder Date\": reminderDate,\n      \"Second Reminder Status\":\n        reminderDate === todayFormatted ? \"SEND\" : \"DON'T SEND\",\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -384
+      ],
+      "id": "5a5fe53a-b410-43bd-ac4d-c610d23fea2a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Gets today's date.\n// 2. Formats today's date as dd/mm/yyyy.\n// 3. Compares today's date with each invoice's Due Date.\n// 4. If both dates are exactly the same, sets \"Due Date Reminder\" to \"DUE\".\n// 5. Otherwise, sets it to \"NOT DUE\".\n// 6. Returns all invoices with the updated reminder status.\n\nconst today = new Date();\n\nconst formatDate = (date) => {\n  const day = String(date.getDate()).padStart(2, \"0\");\n  const month = String(date.getMonth() + 1).padStart(2, \"0\");\n  const year = date.getFullYear();\n  return `${day}/${month}/${year}`;\n};\n\nconst todayFormatted = formatDate(today);\n\nreturn $input.all().map(item => {\n  const dueDate = item.json[\"Due Date\"];\n\n  return {\n    json: {\n      ...item.json,\n      \"Due Date Reminder\":\n        dueDate === todayFormatted ? \"DUE\" : \"NOT DUE\",\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -576
+      ],
+      "id": "e5e63429-e853-4232-afea-fecc053cd668",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0",
+          "mode": "list",
+          "cachedResultName": "Invoice Generation & Payment Follow-Up System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Payment Status",
+              "lookupValue": "UNPAID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        -480
+      ],
+      "id": "29681f02-22b0-43b8-9215-799ff53d9bee",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        -480
+      ],
+      "id": "160c7819-f022-4119-9ae1-dd98329937ac",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0",
+          "mode": "list",
+          "cachedResultName": "Invoice Generation & Payment Follow-Up System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Due Date Reminder": "1st - SENT",
+            "row_number": 0,
+            "Client Name": "={{ $('If1').item.json['Client Name'] }}"
+          },
+          "matchingColumns": [
+            "Client Name"
+          ],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Description",
+              "displayName": "Service Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Sent",
+              "displayName": "Date Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date",
+              "displayName": "Due Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date Reminder",
+              "displayName": "Due Date Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        -576
+      ],
+      "id": "8b6d777e-5188-4359-b96f-36ca909194fd",
+      "name": "Update Row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0",
+          "mode": "list",
+          "cachedResultName": "Invoice Generation & Payment Follow-Up System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DYmbv9TWAHqBv3ehRoYnfpw6fe0ClzGKbwtqIzIYXS0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Due Date Reminder": "2nd - SENT",
+            "row_number": 0,
+            "Client Name": "={{ $('If2').item.json['Client Name'] }}"
+          },
+          "matchingColumns": [
+            "Client Name"
+          ],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service Description",
+              "displayName": "Service Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice ID",
+              "displayName": "Invoice ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Sent",
+              "displayName": "Date Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date",
+              "displayName": "Due Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Due Date Reminder",
+              "displayName": "Due Date Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        -384
+      ],
+      "id": "583a1b9a-800b-49a2-80e4-1e53e0e1e8f0",
+      "name": "Update Row1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('LOG INVOICE').item.json['Email Address'] }}",
+        "subject": " Invoice  Received, Here Is Your Summary",
+        "emailType": "text",
+        "message": "=Hi {{ $('LOG INVOICE').item.json['Client Name'] }},\nThank you for your continued trust in our work.\n\nPlease find below a summary of your invoice for the services rendered:\nService: {{ $('LOG INVOICE').item.json['Service Description'] }}\n\nInvoice Reference: {{ $('LOG INVOICE').item.json['Invoice ID'] }}\n\nAmount Due: {{ $('LOG INVOICE').item.json.Currency }}{{ $('LOG INVOICE').item.json.Amount }}\n\nDue Date: {{ $('LOG INVOICE').item.json['Due Date'] }}\n\nKindly ensure payment is made on or before the due date to avoid any delays. If you have any questions regarding this invoice, simply reply to this email, and we will attend to it promptly.\n\nWe appreciate your prompt attention to this.\n\nBest regards,\nJoshua T. Ikotun",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        -880
+      ],
+      "id": "8659ef31-d6a3-4d2a-baea-ced7c914728a",
+      "name": "Send Invoice",
+      "webhookId": "05aeb62a-14f4-4140-8677-9c2ca060540d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Tally Trigger": [
+      {
+        "json": {
+          "id": "jeLjQR9",
+          "formId": "0QG0Wy",
+          "formName": "Client Intake Form",
+          "respondentId": "5BGPdK6",
+          "createdAt": "2026-06-24T14:16:02.000Z",
+          "submissionPdfUrl": "https://api.tally.so/forms/0QG0Wy/submissions/jeLjQR9/pdf?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJqZUxqUVI5IiwiZm9ybUlkIjoiMFFHMFd5IiwiaWF0IjoxNzgyMzEwNTYyfQ.D49odwSxRgByfQH9rlDkylKwqCqypzTajzM5FFo02lE&signature=b9bd58c65fa9de52c464b8bde30551f387760694b78fe3d66b74268215783449",
+          "submissionPreviewUrl": "https://tally.so/forms/0QG0Wy/submissions/jeLjQR9/preview?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJqZUxqUVI5IiwiZm9ybUlkIjoiMFFHMFd5IiwiaWF0IjoxNzgyMzEwNTYyfQ.D49odwSxRgByfQH9rlDkylKwqCqypzTajzM5FFo02lE&signature=b9bd58c65fa9de52c464b8bde30551f387760694b78fe3d66b74268215783449",
+          "question_jLGAjE": {
+            "label": "Client Name",
+            "value": "Blessing Igwe",
+            "type": "INPUT_TEXT"
+          },
+          "question_2LOGpV": {
+            "label": "Email Address",
+            "value": "jhozysignal@gmail.com",
+            "type": "INPUT_EMAIL"
+          },
+          "question_x295Ao": {
+            "label": "Service Description",
+            "value": "E-Commerce Store Setup on Shopify, Full Configuration",
+            "type": "TEXTAREA"
+          },
+          "question_RR8yAl": {
+            "label": "Amount",
+            "value": 380000,
+            "type": "INPUT_NUMBER"
+          },
+          "question_oolLq1": {
+            "label": "Currency",
+            "value": "NGN",
+            "type": "DROPDOWN"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOG INVOICE": {
+      "main": [
+        [
+          {
+            "node": "Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "LOG INVOICE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team": {
+      "main": [
+        [
+          {
+            "node": "Send Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "1st Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "2nd Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2nd Reminder": {
+      "main": [
+        [
+          {
+            "node": "Team2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1st Reminder": {
+      "main": [
+        [
+          {
+            "node": "Team1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team1": {
+      "main": [
+        [
+          {
+            "node": "Update Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team2": {
+      "main": [
+        [
+          {
+            "node": "Update Row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Invoice": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9b7111d6-92cf-4206-a638-6fce870d886d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "ubv2VpX7CuWx07iG",
+  "tags": []
+}
