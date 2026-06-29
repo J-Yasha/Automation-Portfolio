@@ -1,0 +1,1056 @@
+{
+  "name": "Lead Capture & Nurture System for Recruitment Agencies",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "xXoVYv"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        -1504,
+        496
+      ],
+      "id": "fa01ea1a-98b6-4124-a11b-4d5cc4b43ea5",
+      "name": "Tally Trigger",
+      "webhookId": "b06ed122-64d0-4bc4-a196-0130fa463fdc",
+      "credentials": {
+        "tallyApi": {
+          "id": "OwYOVK8u0fgyo6vC",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=NAME: {{ $json.question_WPjKdL.value }}\nEMAIL: {{ $json.question_a0aAoW.value }}\nCONTACT: {{ $json.question_6RpW5o.value }}\nROLE: {{ $json.question_6RpWYN.value }}\nEXPERIENCE: {{ $json.question_bL6YG0.value }}\nEMPLOYMENT STATUS: {{ $json.question_RRVkMd.value }}\nAVAILABILITY: {{ $json.question_ookvee.value }}\nApplied Date: {{ $json.createdAt }}",
+        "options": {
+          "systemMessage": "You are a candidate qualification assistant for a recruitment agency.\n\nYour job is to analyze incoming candidate applications and assign \na qualification score based on their profile.\n\nScoring Rules:\n\nSTRONG:\n- 4 or more years of experience\nAND\n- Availability is Immediately or Within 1 Month\nAND\n- Employment status is Open to Opportunities or Freelancing\n\nPOTENTIAL:\n- 2 to 3 years of experience\nOR\n- Available Within 1 Month but currently employed\nOR\n- Freelancing with relevant experience\n\nNOT A FIT:\n- Less than 2 years of experience\nOR\n- Availability is In 3 Months or More\nOR\n- Currently a student with no professional experience\n\nInstructions:\n- Analyze the candidate profile provided\n- Assign one score: STRONG, POTENTIAL, or NOT A FIT\n- Write one short reason (maximum 15 words) explaining the score\n- Do not add commentary outside the JSON\n- Do not make assumptions about missing fields, \n  mark them NOT A FIT\n\nAlways return your response in this exact JSON format:\n{\n  \"date\": \"dd/mm/yyyy\"\n  \"score\": \"STRONG\",\n  \"reason\": \"6 years of experience with immediate availability \n  signals strong placement potential\"\n}\n\nIMPORTANT: Return only the JSON. No extra text. No markdown."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1280,
+        496
+      ],
+      "id": "82eb418c-1a2b-4426-a91d-8cee3859181d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        720
+      ],
+      "id": "db441947-8d01-4666-8242-4da69355257a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qo200Jqk3sKp9kAk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json['Email Address'] }}",
+        "subject": "We Have Received Your Application, Here Is What Happens Next",
+        "emailType": "text",
+        "message": "=Hi {{ $('Edit Fields').item.json['Full Name'] }},\n\nThank you for your interest in opportunities through our agency. We have received your application for {{ $('Edit Fields').item.json['Role Interest'] }}, and we are pleased to let you know that your profile has caught our attention.\n\nHere is what happens next:\nOne of our recruitment consultants will review your profile in detail and reach out to you within the next 48 hours to discuss potential opportunities that match your experience and availability.\n\nIn the meantime, if you have any questions or would like to share additional information about your background, simply reply to this email.\n\nWe look forward to speaking with you soon.\n\nBest regards,\nJoshua T. Ikotun\nRecruitment Consultant",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        496
+      ],
+      "id": "117204a4-db34-4c62-a1ae-7dd1d1efc891",
+      "name": "Send a message",
+      "webhookId": "b3e1d440-82c2-40ce-bf42-623cc9d2b9a4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -704,
+        -48
+      ],
+      "id": "c46ed2cb-5c95-4572-9876-f7e1f67bce2f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Takes each candidate's \"Applied Date\" (dd/mm/yyyy).\n// 2. Adds 3 days to the Applied Date.\n// 3. Checks if today's date is on or after the resulting date.\n// 4. Checks if \"Check-In\" is \"Not Yet\".\n// 5. If BOTH conditions are true, sets \"Check-In Reminder\" to \"SEND\".\n// 6. Otherwise, sets it to \"DON'T SEND\".\n// 7. Returns all original data along with the reminder status.\n\nconst today = new Date();\n\nconst formatDate = (date) => {\n  const day = String(date.getDate()).padStart(2, \"0\");\n  const month = String(date.getMonth() + 1).padStart(2, \"0\");\n  const year = date.getFullYear();\n  return `${day}/${month}/${year}`;\n};\n\nreturn $input.all().map(item => {\n  const appliedDateString = item.json[\"Applied Date\"];\n\n  const [day, month, year] = appliedDateString.split(\"/\").map(Number);\n\n  const reminderDate = new Date(year, month - 1, day);\n\n  // Add 3 days to the Applied Date\n  reminderDate.setDate(reminderDate.getDate() + 3);\n\n  const shouldSend =\n    today >= reminderDate &&\n    item.json[\"Check-In\"].toLowerCase() === \"not yet\";\n\n  return {\n    json: {\n      ...item.json,\n      \"Check-In Reminder Date\": formatDate(reminderDate),\n      \"Check-In Reminder\": shouldSend ? \"SEND\" : \"DON'T SEND\",\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -48
+      ],
+      "id": "e78a36bb-a3f2-41db-8e22-6d8cd60d7ae6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet').item.json.Email }}",
+        "subject": "=Just Checking In, {{ $('Get row(s) in sheet').item.json.Name }}",
+        "emailType": "text",
+        "message": "=Hi {{ $('Get row(s) in sheet').item.json.Name }},\n\nI hope you are doing well.\n\nWe wanted to follow up on your recent application for {{ $('Get row(s) in sheet').item.json['Role Interest'] }} submitted on {{ $json['Applied Date'] }}. We have not forgotten about you, and your profile is still very much under active consideration.\n\nOur team is currently matching profiles to available opportunities, and we expect to be in touch with you very shortly with an update.\n\nIf anything has changed regarding your availability or role preferences since you applied, please reply to this email to let us know so we can ensure we find you the best possible match.\n\nI appreciate your patience, and we look forward to connecting with you soon.\n\nBest regards,\nJoshua T. Ikotun,\nRecruitment Consultant.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        -48
+      ],
+      "id": "f13d0150-7781-45b9-bd24-912d48af6ff1",
+      "name": "Send a message3",
+      "webhookId": "0ae375a6-6dc9-4ed3-8058-494156369e1f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Parses the JSON string stored in the \"output\" field.\n// 2. Extracts the date, score, and reason.\n// 3. Returns them as separate JSON properties for easy mapping in later nodes.\n\nconst parsed = JSON.parse($json.output);\n\nreturn [\n  {\n    json: {\n      date: parsed.date,\n      score: parsed.score,\n      reason: parsed.reason,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        496
+      ],
+      "id": "2b7e22ef-4b51-4637-acb1-8c6a430c7182",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Nurture System for Recruitment Agencies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 375196816,
+          "mode": "list",
+          "cachedResultName": "Not a Fit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit#gid=375196816"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Availability": "={{ $('Edit Fields').item.json.Availability }}",
+            "Current Employment Status": "={{ $('Edit Fields').item.json['Employment Status'] }}",
+            "Years of Experience": "={{ $('Edit Fields').item.json['Years of Experience'] }}",
+            "Role Interest": "={{ $('Edit Fields').item.json['Role Interest'] }}",
+            "Phone": "={{ $('Edit Fields').item.json['Phone Number'] }}",
+            "Email": "={{ $('Edit Fields').item.json['Email Address'] }}",
+            "Name": "={{ $('Edit Fields').item.json['Full Name'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Interest",
+              "displayName": "Role Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current Employment Status",
+              "displayName": "Current Employment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Availability",
+              "displayName": "Availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        688
+      ],
+      "id": "d0710dcb-bc94-424d-9536-880d2b5d38b6",
+      "name": "NOT FIT",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b01fdc7-b899-42a8-9c96-8c755294c24d",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "0cf29e32-5883-465f-8c91-295bad00bf4b",
+              "name": "score",
+              "value": "={{ $json.score }}",
+              "type": "string"
+            },
+            {
+              "id": "7da2d816-c0d7-4584-bee2-9e7f07796ae2",
+              "name": "reason",
+              "value": "={{ $json.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "07b5197d-eb59-4ff9-957a-44891b7cdbe8",
+              "name": "Full Name",
+              "value": "={{ $('Tally Trigger').item.json.question_WPjKdL.value }}",
+              "type": "string"
+            },
+            {
+              "id": "c691f2b4-df54-4cce-ac76-c68af926a0ad",
+              "name": "Email Address",
+              "value": "={{ $('Tally Trigger').item.json.question_a0aAoW.value }}",
+              "type": "string"
+            },
+            {
+              "id": "c3917b1a-1fea-4226-84c5-0daacc4dc985",
+              "name": "Phone Number",
+              "value": "={{ $('Tally Trigger').item.json.question_6RpW5o.value }}",
+              "type": "string"
+            },
+            {
+              "id": "525e27ee-910c-412d-a11a-824df174558d",
+              "name": "Role Interest",
+              "value": "={{ $('Tally Trigger').item.json.question_6RpWYN.value }}",
+              "type": "string"
+            },
+            {
+              "id": "164b14af-0692-4a2f-baf5-d559572f1be7",
+              "name": "Years of Experience",
+              "value": "={{ $('Tally Trigger').item.json.question_bL6YG0.value }}",
+              "type": "number"
+            },
+            {
+              "id": "12e5f24a-1e69-4ffd-9868-3fafdd9c6f10",
+              "name": "Employment Status",
+              "value": "={{ $('Tally Trigger').item.json.question_RRVkMd.value }}",
+              "type": "string"
+            },
+            {
+              "id": "68227956-4d3b-47f0-b5df-8e1ee3b93218",
+              "name": "",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "6c51afbc-0ceb-4943-a33b-48af2edb5bd6",
+              "name": "Availability",
+              "value": "={{ $('Tally Trigger').item.json.question_ookvee.value }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        496
+      ],
+      "id": "5b37f7af-e723-418d-bf19-bb37341e6b3a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AQNCXKSK1",
+          "mode": "list",
+          "cachedResultName": "recruitment-team"
+        },
+        "text": "=🎯 New Candidate Application Received\n\nA new candidate has just applied and has been qualified. Here are the details:\n👤 Name: {{ $('Edit Fields').item.json['Full Name'] }}\n\n📧 Email: {{ $('Edit Fields').item.json['Email Address'] }}\n\n📞 Phone: {{ $('Edit Fields').item.json['Phone Number'] }}\n\n💼 Role Interest: {{ $('Edit Fields').item.json['Role Interest'] }}\n\n📅 Years of Experience: {{ $('Edit Fields').item.json['Years of Experience'] }}\n\n🏢 Employment Status: {{ $('Edit Fields').item.json['Employment Status'] }}\n\n⏰ Availability: {{ $('Edit Fields').item.json.Availability }}\n\n📊 Qualification Score: {{ $('Edit Fields').item.json.score }}\n\n💬 Reason: {{ $('Edit Fields').item.json.reason }}\n\n🕐 Applied At: {{ $('Edit Fields').item.json.date }}\n\n📋 Status: Pending Recruiter Review\n\nAn acknowledgment email has already been sent to the candidate. Please review and reach out within 48 hours.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        -32,
+        304
+      ],
+      "id": "168471d9-19dc-4083-a478-373ec9ec08f8",
+      "name": "Recruitment Team",
+      "webhookId": "efa28d40-0d79-4fa7-8952-8f6ba3b8c22b",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json['Email Address'] }}",
+        "subject": "Thank You for Your Application",
+        "emailType": "text",
+        "message": "=Hi {{ $('Edit Fields').item.json['Full Name'] }},\n\nThank you for taking the time to apply through our agency. We genuinely appreciate your interest.\n\nAfter reviewing your profile, we do not currently have opportunities that are the right match for your experience level and availability at this time.\n\nWe encourage you to reapply in the future as your experience grows. We will also keep your details on file and reach out if a suitable opportunity arises.\n\nThank you again for considering us, and we wish you the very best in your career journey.\n\nBest regards,\nJoshua T. Ikotun\nRecruitment Consultant",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        688
+      ],
+      "id": "6969738a-1d4e-4ab3-bdf9-9a45505a53f6",
+      "name": "Send a message1",
+      "webhookId": "0ae375a6-6dc9-4ed3-8058-494156369e1f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Nurture System for Recruitment Agencies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Strong",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Check-In": "Contacted",
+            "Name": "={{ $('Get row(s) in sheet').item.json.Name }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Interest",
+              "displayName": "Role Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current Employment Status",
+              "displayName": "Current Employment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Availability",
+              "displayName": "Availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Applied Date",
+              "displayName": "Applied Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Check-In",
+              "displayName": "Check-In",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        -48
+      ],
+      "id": "8240d6c0-9b6d-4fdf-8435-383e409e2b68",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4749f050-8469-42c6-8905-307d4569a9a8",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": "STRONG",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "43204191-ed88-48f3-a043-5a9e2b61858d",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": "POTENTIAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -480,
+        496
+      ],
+      "id": "1a51dbe3-4a20-4951-8f3a-f55b29796361",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Nurture System for Recruitment Agencies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Strong",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Check-In",
+              "lookupValue": "Not Yet"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "534e0666-0fdb-4b11-bb53-636ea3d2c2b1",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0",
+          "mode": "list",
+          "cachedResultName": "Lead Capture & Nurture System for Recruitment Agencies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Strong",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16QKZf1_hxtd_P6oXPed6YOoD4sO0FwTfAVOCHVjTJt0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Availability": "={{ $json.Availability }}",
+            "Current Employment Status": "={{ $json['Employment Status'] }}",
+            "Years of Experience": "={{ $json['Years of Experience'] }}",
+            "Role Interest": "={{ $json['Role Interest'] }}",
+            "Phone": "={{ $json['Phone Number'] }}",
+            "Email": "={{ $json['Email Address'] }}",
+            "Name": "={{ $json['Full Name'] }}",
+            "Check-In": "Not Yet",
+            "Applied Date": "={{ $json.date }}",
+            "Status": "={{ $json.score }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Interest",
+              "displayName": "Role Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Years of Experience",
+              "displayName": "Years of Experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Current Employment Status",
+              "displayName": "Current Employment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Availability",
+              "displayName": "Availability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Applied Date",
+              "displayName": "Applied Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Check-In",
+              "displayName": "Check-In",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        400
+      ],
+      "id": "8ac5bc49-a0f7-4081-9d76-2469e55ba0e9",
+      "name": "QUALIFIED",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fc4f0e32-01a3-4df6-812d-f418b05dc802",
+              "leftValue": "={{ $json['Check-In Reminder'] }}",
+              "rightValue": "SEND",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        -48
+      ],
+      "id": "a99a86fa-bfc1-4897-8a79-5bdb7c9ee2a1",
+      "name": "If1"
+    }
+  ],
+  "pinData": {
+    "Tally Trigger": [
+      {
+        "json": {
+          "id": "aOE6G6y",
+          "formId": "xXoVYv",
+          "formName": "Candidate Intake Form",
+          "respondentId": "5BGPdK6",
+          "createdAt": "2026-06-27T12:30:07.000Z",
+          "submissionPdfUrl": "https://api.tally.so/forms/xXoVYv/submissions/aOE6G6y/pdf?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJhT0U2RzZ5IiwiZm9ybUlkIjoieFhvVll2IiwiaWF0IjoxNzgyNTYzNDA4fQ.p0HSiBRLHrTe7dGqJHzlkEdtPjQwlSyuVbG6GcxOqRM&signature=1bf1f0fcf7d565660273546d476063b29ecf350a1bf7bb1886cf2fd5c315077c",
+          "submissionPreviewUrl": "https://tally.so/forms/xXoVYv/submissions/aOE6G6y/preview?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJhT0U2RzZ5IiwiZm9ybUlkIjoieFhvVll2IiwiaWF0IjoxNzgyNTYzNDA4fQ.p0HSiBRLHrTe7dGqJHzlkEdtPjQwlSyuVbG6GcxOqRM&signature=1bf1f0fcf7d565660273546d476063b29ecf350a1bf7bb1886cf2fd5c315077c",
+          "question_WPjKdL": {
+            "label": "Full Name",
+            "value": "Adewunmi Rachael",
+            "type": "INPUT_TEXT"
+          },
+          "question_a0aAoW": {
+            "label": "Email Address",
+            "value": "yashaskills@gmail.com",
+            "type": "INPUT_EMAIL"
+          },
+          "question_6RpW5o": {
+            "label": "Phone Number",
+            "value": "+2348122318998",
+            "type": "INPUT_PHONE_NUMBER"
+          },
+          "question_6RpWYN": {
+            "label": "Role Interest",
+            "value": "Customer Support",
+            "type": "INPUT_TEXT"
+          },
+          "question_bL6YG0": {
+            "label": "Years of Experience",
+            "value": 3,
+            "type": "INPUT_NUMBER"
+          },
+          "question_RRVkMd": {
+            "label": "Current Employment Status",
+            "value": "Employed",
+            "type": "DROPDOWN"
+          },
+          "question_ookvee": {
+            "label": "Start Availability",
+            "value": "Within 1 Month",
+            "type": "DROPDOWN"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NOT FIT": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message3": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "QUALIFIED",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NOT FIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QUALIFIED": {
+      "main": [
+        [
+          {
+            "node": "Recruitment Team",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recruitment Team": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9c121af2-480b-4566-8215-aa42c3e39677",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "ZHkRGt3PfIZj6Tez",
+  "tags": []
+}
