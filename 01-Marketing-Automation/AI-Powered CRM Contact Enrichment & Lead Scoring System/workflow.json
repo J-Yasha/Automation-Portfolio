@@ -1,0 +1,425 @@
+{
+  "name": "AI-Powered CRM Contact Enrichment & Lead Scoring System",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1lW9gNBdlsTvek3wFEN5SZJY7bvTufI3-hyM0Aamtdx8",
+          "mode": "list",
+          "cachedResultName": "CRM Contact Enrichment & Lead Scoring System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lW9gNBdlsTvek3wFEN5SZJY7bvTufI3-hyM0Aamtdx8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LightWeight",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lW9gNBdlsTvek3wFEN5SZJY7bvTufI3-hyM0Aamtdx8/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -112
+      ],
+      "id": "c76404ba-85fb-4322-84e5-d69197d58634",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "jsHxrOV8WuvcVxgU",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Full Name: {{ $json['Full Name'] }}\nEmail: {{ $json.Email }}\nPhone: {{ $json.Phone }}\nJob Title: {{ $json['Job Title'] }}\nCompany Name: {{ $json['Company Name'] }}\nService Interest: {{ $json['Service Interest'] }}\nDate: {{ $now }}",
+        "options": {
+          "systemMessage": "=You are a CRM enrichment and lead scoring assistant for a \nB2B sales team.\n\nYour job is to enrich incoming contact records with the company \nintelligence and assign a lead score based on the combined \nProfile of the contact and their company.\n\nYou have access to an HTTP request tool. Use it to fetch \ncompany data from the Abstract API using this URL: \n\nhttps://companyenrichment.abstractapi.com/v2/?api_key=7a6ef89297bc47e5aa235c932d538d16&domain={company_name}\n\nReplace {company_name} with the company name .com provided in the contact record. Fetch the data before generating any enrichment or score.\n\nEnrichment Instructions:\n- Use the API response to extract the company domain \n  and any available details\n- Combine this with the contact's own information to \n  build a complete profile\n- If the API returns no results, use only the contact's \n  provided information and note that enrichment \n  was unavailable\n\nLead Scoring Rules:\n\nHIGH:\n- Contact holds a decision-making title such as CEO, \n  Founder, Director, Manager, or Head of\nAND\n- Company appears to be an established business \n  with a known domain\nAND\n- Service interest aligns with automation, marketing, \n  e-commerce, or operations\n\nMEDIUM:\n- Contact holds a mid-level title\nOR\n- The company domain was found, but the company size \n  appears small\nOR\n- Service interest is relevant but not an \n  exact fit\n\nLOW:\n- Contact title is unclear or entry-level\nOR\n- No company data could be retrieved\nOR\n- Service interest does not align with \n  B2B automation or marketing services\n\nInstructions:\n- Always call the HTTP tool first before scoring\n- Generate a one-paragraph enrichment summary \n  covering the company domain, industry, and \n  what the company likely does\n- Assign one score: HIGH, MEDIUM, or LOW\n- Write one clear reason for the score \n  (maximum 20 words)\n- Do not fabricate data not returned by the API\n- If enrichment fails, note it clearly and \n  score based on available contact data only\n\nAlways return your response in this exact JSON format:\n{\n  \"date\": \"dd/mm/yyyy\",\n  \"company_domain\": \"example.com\",\n  \"company_summary\": \"one paragraph summary here\",\n  \"industry\": \"industry classification here\",\n  \"lead_score\": \"HIGH\",\n  \"score_reason\": \"Decision-maker title with relevant \n  service interest and established company domain\"\n}\n\nIMPORTANT: Return only the JSON. No extra text. \nNo markdown fences."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "a7f155ea-133c-4e22-829a-4510600c83af",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Parses the JSON string stored in the \"output\" field.\n// 2. Automatically extracts every property, regardless of its name.\n// 3. Returns all properties as separate JSON fields.\n// 4. Works even if new fields are added or existing ones are removed.\n\nconst parsed = JSON.parse($json.output);\n\nreturn [\n  {\n    json: {\n      ...parsed,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -112
+      ],
+      "id": "c4caff53-c081-4936-9208-009f7895d17e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BET7VB4VB",
+          "mode": "list",
+          "cachedResultName": "sales-team"
+        },
+        "text": "=🎯 New Contact Enriched and Scored\n\nA new CRM contact has been automatically enriched and scored. Full details below.\n\n👤 Name: {{ $('Google Sheets Trigger').item.json['Full Name'] }}\n\n📧 Email: {{ $('Google Sheets Trigger').item.json.Email }}\n\n📞 Phone: {{ $('Google Sheets Trigger').item.json.Phone }}\n\n💼 Job Title: {{ $('Google Sheets Trigger').item.json['Job Title'] }}\n\n🏢 Company: {{ $('Google Sheets Trigger').item.json['Company Name'] }}\n\n🌐 Domain: {{ $('Code in JavaScript').item.json.company_domain }}\n\n🏭 Industry: {{ $('Code in JavaScript').item.json.industry }}\n\n🎯 Service Interest: {{ $('Google Sheets Trigger').item.json['Service Interest'] }}\n\n📊 Lead Score: {{ $('Code in JavaScript').item.json.lead_score }}\n\n💬 Score Reason: {{ $('Code in JavaScript').item.json.score_reason }}\n\n📝 Company Summary: {{ $('Code in JavaScript').item.json.company_summary }}\n\n📋 Status: Pending Review\n\nPlease review this contact and follow up with HIGH-scored leads within 24 hours.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1024,
+        -112
+      ],
+      "id": "937b135b-8780-4a36-96a6-4154842a38d9",
+      "name": "Send a message",
+      "webhookId": "3c89472b-aa26-4b9e-b93e-cabe838a6610",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1lW9gNBdlsTvek3wFEN5SZJY7bvTufI3-hyM0Aamtdx8",
+          "mode": "list",
+          "cachedResultName": "CRM Contact Enrichment & Lead Scoring System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lW9gNBdlsTvek3wFEN5SZJY7bvTufI3-hyM0Aamtdx8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LightWeight",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lW9gNBdlsTvek3wFEN5SZJY7bvTufI3-hyM0Aamtdx8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "=",
+            "Status": "PENDING REVIEWS",
+            "Date Added": "={{ $json.date }}",
+            "Score Reason": "={{ $json.score_reason }}",
+            "Lead Score": "={{ $json.lead_score }}",
+            "Industry": "={{ $json.industry }}",
+            "Company Summary": "={{ $json.company_summary }}",
+            "Company Domain": "={{ $json.company_domain }}",
+            "Email": "={{ $('Google Sheets Trigger').item.json.Email }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service Interest",
+              "displayName": "Service Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company Summary",
+              "displayName": "Company Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score Reason",
+              "displayName": "Score Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Added",
+              "displayName": "Date Added",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        -112
+      ],
+      "id": "a5ce2ebf-7d89-47f3-9461-1579a451e877",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        112
+      ],
+      "id": "f1e0598b-f941-4ba2-a90f-5d7ccf87919b",
+      "name": "LLM",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Qo200Jqk3sKp9kAk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        112
+      ],
+      "id": "069f5748-854c-45de-a553-3e555a8df060",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d1eb00f8-0fca-43fe-8af1-4b7a86405a8a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "UsfZqznGLcHjXXp8",
+  "tags": []
+}
