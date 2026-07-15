@@ -1,0 +1,606 @@
+{
+  "name": "Multi-Channel Marketing Campaign Tracker & Performance Reporter",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        176
+      ],
+      "id": "b57307da-8e34-4558-8393-169b30f1463e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Campaign Records:\n\nTotal Campaigns: {{ $json.campaign_summary['Total Campaigns'] }}\nChannels Covered: {{ $json.campaign_summary['Channels Covered'] }}\nTotal Impressions: {{ $json.campaign_summary['Total Impressions'] }}\nTotal Clicks: {{ $json.campaign_summary['Total Clicks'] }}\nTotal Conversions: {{ $json.campaign_summary['Total Conversions'] }}\nTotal Spend: {{ $json.campaign_summary['Total Spend'] }}\nTotal Revenue: {{ $json.campaign_summary['Total Revenue'] }}\nAverage CTR: {{ $json.campaign_summary['Average CTR'] }}\nAverage CPC: {{ $json.campaign_summary['Average CPC'] }}\nConversion Rate: {{ $json.campaign_summary['Average Conversion Rate'] }}\nROAS: {{ $json.campaign_summary['Average ROAS'] }}",
+        "options": {
+          "systemMessage": "You are a marketing performance analyst for a digital \nmarketing team.\n\nYour job is to analyze weekly campaign performance data \nacross multiple channels and produce a structured \nperformance report with clear insights and actionable \nrecommendations.\n\nYou will receive aggregated campaign metrics including \ntotal impressions, clicks, conversions, spend, revenue, \nCTR, CPC, conversion rate, and ROAS alongside a \nbreakdown of individual campaign data.\n\nYour Tasks:\n1. Analyze the overall performance metrics provided\n2. Identify the best performing campaign and explain why\n3. Identify the worst performing campaign and explain why\n4. Highlight any metrics that stand out as unusually \n   high or low\n5. Generate three clear and actionable recommendations \n   the marketing team should prioritize in the coming week\n6. Write a campaign breakdown section covering each \n   campaign individually as a numbered list\n\nTone and Style:\n- Write in clear, professional, plain English\n- Avoid technical jargon the client would not understand\n- Be direct and specific, not vague or generic\n- Write as if presenting to a business owner or \n  marketing director who wants to know what happened \n  and what to do next\n- Do not use bullet points inside the narrative, \n  write in full sentences and paragraphs\n- All campaigns regardless of how many must be treated \n  as one unified report, never split into separate \n  outputs or separate responses\n\nNarrative Structure:\nFollow this exact structure in your response as a \nsingle unified output:\n\nTotal Campaigns:\n[The total number of campaigns as a single number, \nexample: 2]\n\nChannels Covered:\n[All channels listed on one line separated by commas, \nexample: LinkedIn, Meta, Google Ads]\n\nOverall Performance:\n[2 to 3 sentences summarizing the week's overall \nperformance across all campaigns combined]\n\nTop Performer:\n[1 to 2 sentences identifying the single best \ncampaign and why it performed well]\n\nUnderperformer:\n[1 to 2 sentences identifying the single weakest \ncampaign and what may have caused it]\n\nKey Observations:\n[2 to 3 sentences highlighting anything unusual, \nnoteworthy, or worth investigating across \nthe full dataset]\n\nRecommendations:\n[Three specific and actionable recommendations \nwritten as full sentences, numbered 1, 2, and 3]\n\nCampaign Breakdown:\n[Write one summary sentence per campaign covering \nchannel, spend, conversions, and ROAS. Number each \ncampaign sequentially starting from 1. Each campaign \nOn its own line. Example format:\n\n1. LinkedIn\nOne-sentence summary of this campaign's performance.\n\n2. Meta\nOne-sentence summary of this campaign's performance.]\n\nAI OVERALL NARRATIVE:\n[Write a brief but detailed summary covering everything from \"the Total Campaign to the Recommendations\" only]\n\nConsolidation Rules:\n- No matter how many campaigns are provided, always \n  produce exactly one report as a single continuous \n  output\n- Never generate a separate narrative block per campaign\n- Total Campaigns and Channels Covered must always \n  reflect the full count and full list across all \n  campaigns in the input\n- The Campaign Breakdown section is the only place \n  where individual campaigns are separated, and they \n  must be numbered sequentially in a listed format\n- Channels Covered must always appear on one line \n  as a comma-separated list, never as a bullet list \n  or multiple lines\n\nGuardrails:\n- Do not fabricate metrics not provided in the input\n- Do not use placeholder text such as insert value here\n- Do not add sections beyond what is listed above\n- Do not mention that you are an AI in the report\n- Do not include any JSON, markdown formatting, \n  or code blocks in your response\n- Write the full narrative as plain text only\n- If a metric appears inconsistent or mathematically \n  incorrect, note it briefly in Key Observations \n  rather than correcting it silently\n\nAlways return your response as a single plain text \noutput following the structure above exactly. \nNo JSON. No markdown. No extra commentary \noutside the report."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1056,
+        176
+      ],
+      "id": "691952ce-d7ee-409a-8889-bd228c690b2c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        400
+      ],
+      "id": "1f2885be-f549-4ad8-a4b2-a3573a61ce11",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Jj05xAFibMYXnCFg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12GDE1-ZJzQNqx-WF4v6JOK4Z_UlD1pqfhHJkUFbnZE8",
+          "mode": "list",
+          "cachedResultName": "Multi-Channel Marketing Campaign Tracker & Performance Reporter",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12GDE1-ZJzQNqx-WF4v6JOK4Z_UlD1pqfhHJkUFbnZE8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2029558677,
+          "mode": "list",
+          "cachedResultName": "Master Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12GDE1-ZJzQNqx-WF4v6JOK4Z_UlD1pqfhHJkUFbnZE8/edit#gid=2029558677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date Range": "={{ $('CALENDER').item.json['Previous Week Range'] }}",
+            "Total Revenue": "={{ $json.campaign_summary['Total Revenue'] }}",
+            "Average CPC": "={{ $json.campaign_summary['Average CPC'] }}",
+            "Report Status": "SENT",
+            "AI Narrative": "={{ $json.ai_overall_narrative }}",
+            "Average CTR": "={{ $json.campaign_summary['Average CTR'] }}",
+            "Conversion Rate": "={{ $json.campaign_summary['Average Conversion Rate'] }}",
+            "ROAS": "={{ $json.campaign_summary['Average ROAS'] }}",
+            "Total Impressions": "={{ $json.campaign_summary['Total Impressions'] }}",
+            "Total Clicks": "={{ $json.campaign_summary['Total Clicks'] }}",
+            "Total Conversions": "={{ $json.campaign_summary['Total Conversions'] }}",
+            "Total Spend": "={{ $json.campaign_summary['Total Spend'] }}",
+            "Report Date": "={{ $('CALENDER').item.json['Present Day'] }}",
+            "Total Campaigns": "={{ $json.campaign_summary['Total Campaigns'] }}",
+            "Channels Covered": "={{ $json.campaign_summary['Channels Covered'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date Range",
+              "displayName": "Date Range",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Report Date",
+              "displayName": "Report Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Campaigns",
+              "displayName": "Total Campaigns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Channels Covered",
+              "displayName": "Channels Covered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Impressions",
+              "displayName": "Total Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Clicks",
+              "displayName": "Total Clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Conversions",
+              "displayName": "Total Conversions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Spend",
+              "displayName": "Total Spend",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Revenue",
+              "displayName": "Total Revenue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Average CTR",
+              "displayName": "Average CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Average CPC",
+              "displayName": "Average CPC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Conversion Rate",
+              "displayName": "Conversion Rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ROAS",
+              "displayName": "ROAS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI Narrative",
+              "displayName": "AI Narrative",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Report Status",
+              "displayName": "Report Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2304,
+        176
+      ],
+      "id": "454cdea3-110a-419b-b19c-74a91bdae1eb",
+      "name": "MASTER SHEET",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "12GDE1-ZJzQNqx-WF4v6JOK4Z_UlD1pqfhHJkUFbnZE8",
+          "mode": "list",
+          "cachedResultName": "Multi-Channel Marketing Campaign Tracker & Performance Reporter",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12GDE1-ZJzQNqx-WF4v6JOK4Z_UlD1pqfhHJkUFbnZE8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12GDE1-ZJzQNqx-WF4v6JOK4Z_UlD1pqfhHJkUFbnZE8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Date Range",
+              "lookupValue": "={{ $json['Previous Week Range'] }}"
+            },
+            {
+              "lookupColumn": "Date Range",
+              "lookupValue": "06/07/2026 - 12/07/2026"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        176
+      ],
+      "id": "67a98192-989f-4265-b2e8-edd5b3515346",
+      "name": "REPORT SHEET",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Parses the AI output stored in the \"output\" field.\n// 2. Separates every section into its own JSON field automatically.\n// 3. Keeps the original Campaign Breakdown section intact.\n// 4. Removes the campaign_breakdown_items output entirely.\n// 5. Works even if sections are added, removed, or renamed.\n\nconst text = $json.output;\n\nconst result = {};\n\n// Extract all sections dynamically\nconst sectionRegex = /([A-Za-z ]+):\\n([\\s\\S]*?)(?=\\n\\n[A-Za-z ]+:\\n|$)/g;\n\nlet match;\n\nwhile ((match = sectionRegex.exec(text)) !== null) {\n  const key = match[1]\n    .trim()\n    .toLowerCase()\n    .replace(/[^\\w\\s]/g, \"\")\n    .replace(/\\s+/g, \"_\");\n\n  const value = match[2].trim();\n\n  result[key] = value;\n}\n\nreturn [\n  {\n    json: result,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        176
+      ],
+      "id": "2765a9bf-41f5-4793-8f59-39d1452ec517",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1b2572c3-0359-44ad-9ffc-0a8f526fffda",
+              "name": "campaign_summary",
+              "value": "={{ $('Calculate Metrics').item.json.campaign_summary }}",
+              "type": "object"
+            },
+            {
+              "id": "1e58e1da-1f7d-48ec-9d44-ba4d12781f43",
+              "name": "ai_overall_narrative",
+              "value": "={{ $('Code in JavaScript').item.json.ai_overall_narrative }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        176
+      ],
+      "id": "48b94b3a-8f38-4e04-a8f4-60e6e2ea89ab",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Gets today's date.\n// 2. Finds the Monday and Friday of the PREVIOUS week.\n// 3. Formats both dates as DD/MM/YYYY.\n// 4. Also includes today's date.\n// 5. Returns:\n//    - Previous Week Range\n//    - Present Day\n//\n// Example Output:\n// {\n//   \"Previous Week Range\": \"29/06/2026 - 03/07/2026\",\n//   \"Present Day\": \"11/07/2026\"\n// }\n\nconst today = new Date();\n\n// Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)\nconst currentDay = today.getDay();\n\n// Calculate how many days have passed since Monday\nconst daysSinceMonday = currentDay === 0 ? 6 : currentDay - 1;\n\n// Get previous week's Monday\nconst previousMonday = new Date(today);\npreviousMonday.setDate(today.getDate() - daysSinceMonday - 7);\n\n// Get previous week's Friday\nconst previousFriday = new Date(previousMonday);\npreviousFriday.setDate(previousMonday.getDate() + 6);\n\n// Format function: DD/MM/YYYY\nconst formatDate = (date) => {\n  const day = String(date.getDate()).padStart(2, \"0\");\n  const month = String(date.getMonth() + 1).padStart(2, \"0\");\n  const year = date.getFullYear();\n\n  return `${day}/${month}/${year}`;\n};\n\nreturn [\n  {\n    json: {\n      \"Previous Week Range\": `${formatDate(previousMonday)} - ${formatDate(previousFriday)}`,\n      \"Present Day\": formatDate(today)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        176
+      ],
+      "id": "3c8f2cc0-46c0-4c11-8d82-64c3d386a208",
+      "name": "CALENDER"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Takes one or multiple campaign records as input.\n// 2. Calculates overall campaign totals.\n// 3. Calculates average CTR, CPC, Conversion Rate, and ROAS.\n// 4. Returns ONLY the campaign summary.\n// 5. Works whether there is 1 campaign or many campaigns.\n\nconst channelsCovered = [];\n\nlet totalImpressions = 0;\nlet totalClicks = 0;\nlet totalConversions = 0;\nlet totalSpend = 0;\nlet totalRevenue = 0;\n\nlet totalCTR = 0;\nlet totalCPC = 0;\nlet totalConversionRate = 0;\nlet totalROAS = 0;\n\nconst items = $input.all();\n\nitems.forEach(item => {\n  const channel = item.json[\"Channel\"];\n\n  const impressions = Number(item.json[\"Impressions\"]) || 0;\n  const clicks = Number(item.json[\"Clicks\"]) || 0;\n  const conversions = Number(item.json[\"Conversions\"]) || 0;\n  const spend = Number(item.json[\"Spend\"]) || 0;\n  const revenue = Number(item.json[\"Revenue\"]) || 0;\n\n  // Calculate campaign metrics\n  const ctr = impressions > 0\n    ? ((clicks / impressions) * 100)\n    : 0;\n\n  const cpc = clicks > 0\n    ? (spend / clicks)\n    : 0;\n\n  const conversionRate = clicks > 0\n    ? ((conversions / clicks) * 100)\n    : 0;\n\n  const roas = spend > 0\n    ? (revenue / spend)\n    : 0;\n\n  // Accumulate totals\n  totalImpressions += impressions;\n  totalClicks += clicks;\n  totalConversions += conversions;\n  totalSpend += spend;\n  totalRevenue += revenue;\n\n  // Accumulate averages\n  totalCTR += ctr;\n  totalCPC += cpc;\n  totalConversionRate += conversionRate;\n  totalROAS += roas;\n\n  // Track unique channels\n  if (!channelsCovered.includes(channel)) {\n    channelsCovered.push(channel);\n  }\n});\n\nconst totalCampaigns = items.length;\n\nreturn [\n  {\n    json: {\n      campaign_summary: {\n        \"Total Campaigns\": totalCampaigns,\n        \"Channels Covered\": channelsCovered.join(\", \"),\n        \"Total Impressions\": totalImpressions,\n        \"Total Clicks\": totalClicks,\n        \"Total Conversions\": totalConversions,\n        \"Total Spend\": totalSpend,\n        \"Total Revenue\": totalRevenue,\n        \"Average CTR\": totalCampaigns > 0\n          ? Number((totalCTR / totalCampaigns).toFixed(2))\n          : 0,\n        \"Average CPC\": totalCampaigns > 0\n          ? Number((totalCPC / totalCampaigns).toFixed(2))\n          : 0,\n        \"Average Conversion Rate\": totalCampaigns > 0\n          ? Number((totalConversionRate / totalCampaigns).toFixed(2))\n          : 0,\n        \"Average ROAS\": totalCampaigns > 0\n          ? Number((totalROAS / totalCampaigns).toFixed(2))\n          : 0,\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        176
+      ],
+      "id": "5ac403fc-20f7-4b97-aba7-2c6b1049bd1c",
+      "name": "Calculate Metrics"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBJUW04MP",
+          "mode": "list",
+          "cachedResultName": "standard-teams"
+        },
+        "text": "=📊 Weekly Marketing Campaign Performance Report\n🗓 Week of: {{ $('CALENDER').item.json['Previous Week Range'] }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📈 CAMPAIGN OVERVIEW\n\nTotal Campaigns Tracked: {{ $json.total_campaigns }}\nChannels Covered: {{ $json.channels_covered }}\nReporting Period: {{ $('CALENDER').item.json['Previous Week Range'] }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n💰 KEY METRICS SUMMARY\n\nTOP PERFORMER:\n{{ $json.top_performer }}\n\nUNDER PERFORMER:\n{{ $json.underperformer }}\n\nOVERALL PERFORMANCE:\n{{ $json.overall_performance }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 CAMPAIGN BREAKDOWN\n\n{{ $json.campaign_breakdown }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🤖 AI PERFORMANCE NARRATIVE\n\nKEY OBSERVATION:\n{{ $json.key_observations }}\n\nRECOMMENDATION:\n{{ $json.recommendations }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 Report Status: Auto-Generated\n🕐 Generated At: {{ $('CALENDER').item.json['Present Day'] }}\n\nThis report was generated automatically.\nFor questions, contact the marketing lead directly.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1632,
+        80
+      ],
+      "id": "31e39ec1-c442-4f2d-9b00-2fe69af70a9f",
+      "name": "Report (Marketing Team)",
+      "webhookId": "da1f55fb-662c-4370-9074-d0d15031e6b8",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "yashaskills@gmail.com",
+        "subject": "=Weekly Campaign Performance Report, Week of {{ $('CALENDER').item.json['Previous Week Range'] }}",
+        "emailType": "text",
+        "message": "=Hello Mr. Yasha,\n\nPlease find your weekly marketing campaign performance summary for the period of {{ $('CALENDER').item.json['Previous Week Range'] }}.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPERFORMANCE SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nChannels Covered: \n{{ $json.channels_covered }}\n\nKEY OBSERVATION:\n{{ $json.key_observations }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCAMPAIGN BREAKDOWN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nBREAKDOWN:\n{{ $json.campaign_breakdown }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPERFORMANCE INSIGHTS & RECOMMENDATIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nUNDER-PERFORMER:\n{{ $json.underperformer }}\n\nTOP-PERFORMER:\n{{ $json.top_performer }}\n\nOVERALL-PERFORMANCE:\n{{ $json.overall_performance }}\n\nRECOMMENDATION:\n{{ $json.recommendations }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThis report is generated automatically every Monday morning and covers the previous week's campaign activity.\n\nIf you have any questions regarding this report or would like to discuss strategy adjustments based on these results, please reply to this email, and we will schedule a call.\n\nBest regards,\nJoshua T. Ikotun\nMarketing Automation Specialist",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        272
+      ],
+      "id": "87f03058-f049-4dde-bbd1-416cfbfe1293",
+      "name": "Report (Team Lead)",
+      "webhookId": "096bf983-afb7-4dc3-84d4-7e218f598446",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1856,
+        176
+      ],
+      "id": "88854e9f-aa5d-4b4d-bc48-ed3ffd99950f",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "CALENDER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REPORT SHEET": {
+      "main": [
+        [
+          {
+            "node": "Calculate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MASTER SHEET": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Report (Marketing Team)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Report (Team Lead)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "MASTER SHEET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CALENDER": {
+      "main": [
+        [
+          {
+            "node": "REPORT SHEET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Metrics": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report (Marketing Team)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report (Team Lead)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7b65440f-a1dc-4a0f-b070-f0f7adacad2a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "UWn6N1i0VzfFaiwQ",
+  "tags": []
+}
