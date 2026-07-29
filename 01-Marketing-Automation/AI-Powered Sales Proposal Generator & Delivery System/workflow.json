@@ -1,0 +1,483 @@
+{
+  "name": "AI-Powered Sales Proposal Generator & Delivery System",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "KYN2v7"
+      },
+      "type": "n8n-nodes-tallyforms.tallyTrigger",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -192
+      ],
+      "id": "8460d591-b494-49eb-933a-f5927b565876",
+      "name": "Tally Trigger",
+      "webhookId": "f484a942-7fd3-4f80-9d6a-3bee0a0ce784",
+      "credentials": {
+        "tallyApi": {
+          "id": "OwYOVK8u0fgyo6vC",
+          "name": "Tally account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Client Briefing Details:\n- Prospect Name: {{ $json.question_GDrlvZ.value }}\n- Company Name: {{ $json.question_OYAG1R.value }}\n- Industry: {{ $json.question_PYAOjV.value }}\n- Key Pain Points: {{ $json.question_EDPWz4.value }}\n- Goals: {{ $json.question_rLlPyN.value }}\n- Budget Range: {{ $json.question_4v2r4X.value }}\n- Preferred Timeline: {{ $json.question_jWBPaa.value }}",
+        "options": {
+          "systemMessage": "You are an expert sales proposal writer for a digital \nmarketing and automation agency.\n\nYour job is to generate a complete, professional, and \npersonalized sales proposal based on a client briefing \nsubmitted by the sales team.\n\nThe proposal must feel tailored to the specific prospect, \nnot templated or generic. Every section must reference \nthe prospect's actual situation, pain points, and goals \nas described in the briefing.\n\nYou will receive the following briefing details:\n- Prospect Name\n- Company Name\n- Industry\n- Key Pain Points\n- Goals\n- Budget Range\n- Preferred Timeline\n\nProposal Structure:\nGenerate the proposal in this exact order with these \nexact section headers:\n\nESTIMATED DEAL\nCalculate the estimated deal value as the midpoint of the budget range the prospect selected. Here is the logic: Budget Range: ₦1M - ₦2M\nEstimated Value: (1,000,000 + 2,000,000) / 2 = ₦1,500,000\n\n\nEXECUTIVE SUMMARY\nWrite 2 to 3 sentences summarizing who the prospect is, \nwhat challenge they are facing, and why this proposal \naddresses it directly. Make it confident and \noutcome-focused.\n\nPROBLEM STATEMENT\nWrite 2 to 3 sentences articulating the prospect's \ncore business problem in their own language. Make them \nfeel understood. Do not use generic language.\n\nPROPOSED SOLUTION\nWrite 3 to 4 sentences describing the specific solution \nbeing offered. Reference the prospect's industry and \ngoals directly. Explain what will be built or delivered \nand why it fits their situation.\n\nSCOPE OF WORK\nList 4 to 6 specific deliverables as numbered items. \nEach deliverable must be one clear sentence describing \nexactly what will be done. Make them specific to the \nprospect's industry and goals, not generic bullet points.\n\nINVESTMENT SUMMARY\nWrite 2 sentences covering the budget range discussed \nand what it includes. Frame the investment in terms \nof value and outcome, not just cost.\n\nTIMELINE\nStructure the timeline across three phases as follows:\n\nPhase 1: Discovery and Strategy (Week 1 to 2)\nOne sentence describing what happens in this phase.\n\nPhase 2: Build and Implementation (Week 3 to 6)\nOne sentence describing what happens in this phase.\n\nPhase 3: Launch and Optimization (Week 7 to 8)\nOne sentence describing what happens in this phase.\n\nCALL TO ACTION\nWrite 2 sentences inviting the prospect to take the \nnext step. Include a specific action such as booking \na call or replying to confirm. Keep it warm and direct.\n\n\nTone and Style Rules:\n- Write in a confident, professional, and warm tone\n- Speak directly to the prospect using their name \n  and company name naturally throughout the proposal\n- Avoid jargon, buzzwords, and generic filler phrases\n- Every section must feel written for this prospect \n  specifically, not copied from a template\n- It should be written in a mail form with perfect paragraph placement\n- Do not use placeholder text such as \n  insert value here\n- Do not add sections beyond what is listed above\n- Do not mention that you are an AI\n- Always follow the proposal structure\n\nAlways return the proposal as plain text following \nthe structure above exactly. No JSON. No markdown. \nNo code blocks. No extra commentary outside \nthe proposal sections."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -320,
+        -192
+      ],
+      "id": "81a297d3-e99e-4632-8415-ad59fb00c4b5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Tally Trigger').item.json.question_VYZJEg.value }}",
+        "subject": "=Your Personalized Proposal from {{ $('Edit Fields').item.json.Name }}, {{ $('Edit Fields').item.json.Company }}",
+        "emailType": "text",
+        "message": "=Hi {{ $('Edit Fields').item.json.Name }},\n\nThank you for taking the time to share your goals and challenges with us. It was genuinely valuable to understand where {{ $('Edit Fields').item.json.Company }} is headed and what stands between you and getting there.\n\nWe have put together a personalized proposal based specifically on what you shared with us. It outlines our understanding of your situation, the solution we recommend, what we will deliver, and how working together works from start to finish.\n\nPlease find your full proposal attached to this email.\n\nWe are confident this is the right approach for {{ $('Edit Fields').item.json.Company }}, and we would love the opportunity to walk you through it in person.\n\nTo book a discovery call or ask any questions, simply reply to this email, and we will get back to you within 24 hours.\n\nWe look forward to hearing from you.\n\nWarm regards,\nJoshua T. Ikotun\nBusiness Development",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "Proposal"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        -288
+      ],
+      "id": "0c57aef6-94a3-4d16-858d-8bf5d8e7a871",
+      "name": "Send a message",
+      "webhookId": "2384a163-c564-496c-8ad2-b3e9decf1cd0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UeHOBzT5kxVhnmI2hYF-YIo-Q_BmT5HUlWhsJJglz_4",
+          "mode": "list",
+          "cachedResultName": "Sales Proposal Generator & Delivery System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UeHOBzT5kxVhnmI2hYF-YIo-Q_BmT5HUlWhsJJglz_4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UeHOBzT5kxVhnmI2hYF-YIo-Q_BmT5HUlWhsJJglz_4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Prospect Name": "={{ $('Edit Fields').item.json.Name }}",
+            "Company Name": "={{ $('Edit Fields').item.json.Company }}",
+            "Email": "={{ $('Edit Fields').item.json.Gmail }}",
+            "Industry": "={{ $('Edit Fields').item.json.Industry }}",
+            "Budget Range": "={{ $('Edit Fields').item.json['Budget Range'] }}",
+            "Proposal Status": "Sent",
+            "Date Sent": "={{ $('Edit Fields').item.json['Date Created'] }}",
+            "Estimated Deal Value": "={{ $('Edit Fields').item.json['Estimated Deal'] }}",
+            "Follow Up Date": "={{ $('Edit Fields').item.json['Follow Up Date'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Prospect Name",
+              "displayName": "Prospect Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget Range",
+              "displayName": "Budget Range",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estimated Deal Value",
+              "displayName": "Estimated Deal Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Sent",
+              "displayName": "Date Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Proposal Status",
+              "displayName": "Proposal Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow Up Date",
+              "displayName": "Follow Up Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        -288
+      ],
+      "id": "cf9a2c8b-75b1-4472-9d9e-9153bb0af653",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code:\n// 1. Reads the AI-generated proposal from the \"output\" field.\n// 2. Separates each major section into its own JSON field.\n// 3. Extracts the Estimated Deal, Executive Summary, Problem Statement,\n//    Proposed Solution, Investment Summary, Timeline, and Call to Action.\n// 4. Separates each Scope of Work item into individual array items.\n// 5. Separates each Timeline phase into its own field.\n// 6. Automatically creates the Date Created using today's date.\n// 7. Automatically creates the Follow Up Date as 2 days after the Date Created.\n// 8. Formats both dates as \"Month DD, YYYY\".\n// 9. Works dynamically even if the content or number of items changes.\n// 10. Returns clean, individually mappable JSON fields.\n\nconst text = $json.output || \"\";\n\nconst result = {};\n\n\n// Get today's date\nconst today = new Date();\n\n// Format date as \"Month DD, YYYY\"\nconst formatDate = (date) => {\n  return date.toLocaleDateString(\"en-US\", {\n    month: \"long\",\n    day: \"numeric\",\n    year: \"numeric\"\n  });\n};\n\n// Add dates\nresult.date_created = formatDate(today);\n\nconst followUpDate = new Date(today);\nfollowUpDate.setDate(followUpDate.getDate() + 2);\n\nresult.follow_up_date = formatDate(followUpDate);\n\n\n// Helper function to extract sections\nconst extractSection = (startHeading, endHeading = null) => {\n  const escapedStart = startHeading.replace(/[.*+?^${}()|[\\]\\\\]/g, \"\\\\$&\");\n\n  let regex;\n\n  if (endHeading) {\n    const escapedEnd = endHeading.replace(/[.*+?^${}()|[\\]\\\\]/g, \"\\\\$&\");\n\n    regex = new RegExp(\n      `${escapedStart}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=\\\\n\\\\n${escapedEnd}\\\\s*\\\\n|$)`,\n      \"i\"\n    );\n  } else {\n    regex = new RegExp(\n      `${escapedStart}\\\\s*\\\\n([\\\\s\\\\S]*?)$`,\n      \"i\"\n    );\n  }\n\n  const match = text.match(regex);\n\n  return match ? match[1].trim() : null;\n};\n\n\n// Estimated Deal\nconst estimatedDeal = extractSection(\n  \"ESTIMATED DEAL\",\n  \"EXECUTIVE SUMMARY\"\n);\n\nif (estimatedDeal) {\n  const valueMatch = estimatedDeal.match(/Estimated Value:\\s*(.+)/i);\n  result.estimated_deal = valueMatch\n    ? valueMatch[1].trim()\n    : estimatedDeal;\n}\n\n\n// Executive Summary\nresult.executive_summary = extractSection(\n  \"EXECUTIVE SUMMARY\",\n  \"PROBLEM STATEMENT\"\n);\n\n\n// Problem Statement\nresult.problem_statement = extractSection(\n  \"PROBLEM STATEMENT\",\n  \"PROPOSED SOLUTION\"\n);\n\n\n// Proposed Solution\nresult.proposed_solution = extractSection(\n  \"PROPOSED SOLUTION\",\n  \"SCOPE OF WORK\"\n);\n\n\n// Scope of Work\nconst scopeText = extractSection(\n  \"SCOPE OF WORK\",\n  \"INVESTMENT SUMMARY\"\n);\n\nconst scopeItems = [];\n\nif (scopeText) {\n  const regex = /(?:^|\\n)\\d+\\.\\s+([\\s\\S]*?)(?=\\n\\d+\\.\\s+|$)/g;\n\n  let match;\n\n  while ((match = regex.exec(scopeText)) !== null) {\n    scopeItems.push(match[1].trim());\n  }\n}\n\nresult.scope_of_work = scopeItems;\n\n\n// Investment Summary\nresult.investment_summary = extractSection(\n  \"INVESTMENT SUMMARY\",\n  \"TIMELINE\"\n);\n\n\n// Timeline\nconst timelineText = extractSection(\n  \"TIMELINE\",\n  \"CALL TO ACTION\"\n);\n\nconst timeline = {};\n\nif (timelineText) {\n  const phaseRegex =\n    /Phase\\s+(\\d+):\\s*(.+?)\\s*\\n([\\s\\S]*?)(?=\\n\\nPhase\\s+\\d+:|$)/gi;\n\n  let match;\n\n  while ((match = phaseRegex.exec(timelineText)) !== null) {\n    timeline[`phase_${match[1]}`] = {\n      title: match[2].trim(),\n      description: match[3].trim()\n    };\n  }\n}\n\nresult.timeline = timeline;\n\n\n// Call to Action\nresult.call_to_action = extractSection(\n  \"CALL TO ACTION\"\n);\n\n\n// Return clean JSON\nreturn [\n  {\n    json: result\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -192
+      ],
+      "id": "f9d12b16-28ce-49a9-bbd5-2940dbf41197",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        32
+      ],
+      "id": "ac914f4f-6d38-4f39-9bba-ff57214df01a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Jj05xAFibMYXnCFg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "03cc3a31-1d3a-4756-af80-244d22970f11",
+              "name": "Client Proposal",
+              "value": "=Executive Summary:\n{{ $json.executive_summary }}\n\n\nProblem Statement:\n{{ $json.problem_statement }}\n\n\nProposed Solution:\n{{ $json.proposed_solution }}\n\n\nScope Of Work:\n01: {{ $json.scope_of_work[0] }}\n\n02: {{ $json.scope_of_work[1] }}\n\n03: {{ $json.scope_of_work[2] }}\n\n04: {{ $json.scope_of_work[3] }}\n\n05: {{ $json.scope_of_work[4] }}\n\n\nInvestment Summary:\n{{ $json.investment_summary }}\n\n\nTimeline:\nPhase 1\nTitle: {{ $json.timeline.phase_1.title }}\n\nDescription: {{ $json.timeline.phase_1.description }}\n\nPhase 2\nTitle: {{ $json.timeline.phase_2.title }}\n\nDescription: {{ $json.timeline.phase_2.description }}\n\nPhase 3\nTitle: {{ $json.timeline.phase_3.title }}\n\nDescription: {{ $json.timeline.phase_3.description }}  \n\n\n{{ $json.call_to_action }}",
+              "type": "string"
+            },
+            {
+              "id": "21c1f2fb-cc7b-4904-b729-e55ed857903e",
+              "name": "Company",
+              "value": "={{ $('Tally Trigger').item.json.question_OYAG1R.value }}",
+              "type": "string"
+            },
+            {
+              "id": "9eb699e5-94c1-413d-a2da-8e6764d06b1c",
+              "name": "Industry",
+              "value": "={{ $('Tally Trigger').item.json.question_PYAOjV.value }}",
+              "type": "string"
+            },
+            {
+              "id": "a6cbfe94-7ae8-42c6-b1e6-48ba671129ce",
+              "name": "Key Pain Points",
+              "value": "={{ $('Tally Trigger').item.json.question_EDPWz4.value }}",
+              "type": "string"
+            },
+            {
+              "id": "0396bb85-6385-4f42-b209-dcf3dddc04d3",
+              "name": "Goals",
+              "value": "={{ $('Tally Trigger').item.json.question_rLlPyN.value }}",
+              "type": "string"
+            },
+            {
+              "id": "7e9d2774-b30f-49e2-9d99-5bad51d3cfd0",
+              "name": "Name",
+              "value": "={{ $('Tally Trigger').item.json.question_GDrlvZ.value }}",
+              "type": "string"
+            },
+            {
+              "id": "3e4f2171-af85-45f5-bf00-6ff95aa2e00b",
+              "name": "Gmail",
+              "value": "={{ $('Tally Trigger').item.json.question_VYZJEg.value }}",
+              "type": "string"
+            },
+            {
+              "id": "6b5afadd-39b4-40f8-aeb8-856fadb90182",
+              "name": "Budget Range",
+              "value": "={{ $('Tally Trigger').item.json.question_4v2r4X.value }}",
+              "type": "string"
+            },
+            {
+              "id": "bbe6ad30-8a5b-4bc7-a6f9-74a1e12958c0",
+              "name": "Preferred Timeline",
+              "value": "={{ $('Tally Trigger').item.json.question_jWBPaa.value }}",
+              "type": "string"
+            },
+            {
+              "id": "a457e289-15ea-4d54-a7b3-7aa866f6036c",
+              "name": "Date Created",
+              "value": "={{ $json.date_created }}",
+              "type": "string"
+            },
+            {
+              "id": "5f81b219-1327-450e-b4c6-0e68e70e3368",
+              "name": "Follow Up Date",
+              "value": "={{ $json.follow_up_date }}",
+              "type": "string"
+            },
+            {
+              "id": "14914ea4-bb59-4949-adac-736f56535a80",
+              "name": "Estimated Deal",
+              "value": "={{ $json.estimated_deal }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        -192
+      ],
+      "id": "ee3aa98b-b967-47a1-9166-255ab84b3932",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "=Client Proposal",
+        "binaryPropertyName": "=Proposal",
+        "options": {
+          "fileName": "={{ $('Tally Trigger').item.json.question_OYAG1R.value }} Proposal"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        -288
+      ],
+      "id": "a060f876-70b0-4fb6-968f-a00ff9ebcfa5",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BET7VB4VB",
+          "mode": "list",
+          "cachedResultName": "sales"
+        },
+        "text": "=📋 New Proposal Sent\n\nA sales proposal has just been generated and delivered to a prospect. Here are the details.\n\n👤 Prospect Name: {{ $('Edit Fields').item.json.Name }}\n\n🏢 Company: {{ $('Edit Fields').item.json.Company }}\n\n🏭 Industry: {{ $('Edit Fields').item.json.Industry }}\n\n📧 Email: {{ $('Edit Fields').item.json.Gmail }}\n\n💰 Budget Range: {{ $('Edit Fields').item.json['Budget Range'] }}\n\n📅 Preferred Timeline: {{ $json['Preferred Timeline'] }}\n\n🕐 Sent At: {{ $('Edit Fields').item.json['Date Created'] }}\n\n📊 Proposal Status: Sent\n\nKey Pain Points:\n{{ $('Edit Fields').item.json['Key Pain Points'] }}\n\nGoals:\n{{ $('Edit Fields').item.json.Goals }}\n\nPlease follow up with this prospect within 48 hours of proposal delivery to maintain momentum and answer any questions they may have.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        480,
+        -96
+      ],
+      "id": "4ca84ec0-e7e4-4e1b-84d2-267fd1468270",
+      "name": "Sales Team",
+      "webhookId": "15d10382-9abd-442f-a501-524d8ce1f2fa",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tally Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sales Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Team": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2340ae81-bbff-452e-8462-7518c8b8d40c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "dp7aqvqyUhZFLwcV",
+  "tags": []
+}
