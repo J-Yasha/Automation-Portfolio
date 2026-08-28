@@ -1,0 +1,725 @@
+{
+  "name": "Secure Client Contract Generation & Document Delivery System",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0f46e33d-e685-4f6c-a754-51d83e9a4df5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        720
+      ],
+      "id": "22f0475d-f2e2-4bb1-a036-13a9effd847f",
+      "name": "Webhook",
+      "webhookId": "0f46e33d-e685-4f6c-a754-51d83e9a4df5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "da6bdd96-e04d-49aa-a825-c7c74942210b",
+              "leftValue": "={{ $json.headers['secret-code'] }}",
+              "rightValue": "=yasha234",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        192,
+        720
+      ],
+      "id": "b89c87b6-51a7-473d-8a28-bc3a67ca81e1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db25b5be-ebce-4847-b0c1-5c9b733bbda4",
+              "name": "Client Name",
+              "value": "={{ $json.body.client_name }}",
+              "type": "string"
+            },
+            {
+              "id": "0dfa56a6-1ded-425f-b32f-213b6600c89f",
+              "name": "Client Email",
+              "value": "={{ $json.body.client_email }}",
+              "type": "string"
+            },
+            {
+              "id": "bb25e671-46c4-4d0b-a3ba-fce3c3dfdad5",
+              "name": "Service Provider Name",
+              "value": "={{ $json.body.service_provider_name }}",
+              "type": "string"
+            },
+            {
+              "id": "376e36bb-9d93-47ef-aaad-c3e44be65462",
+              "name": "Scope Of Work",
+              "value": "={{ $json.body.scope_of_work }}",
+              "type": "string"
+            },
+            {
+              "id": "c0c8ac16-e43d-4d61-a725-3cc4fb8f4c2d",
+              "name": "Deliverables",
+              "value": "={{ $json.body.deliverables }}",
+              "type": "string"
+            },
+            {
+              "id": "811343e8-fb4e-41d9-9a18-c8642af0a4b1",
+              "name": "Contract Value",
+              "value": "={{ $json.body.contract_value }}",
+              "type": "string"
+            },
+            {
+              "id": "28abb446-93b5-4f39-93bf-1f66dd45c72c",
+              "name": "Currency",
+              "value": "={{ $json.body.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "d4e35f50-d923-42d4-8071-890cace7b31d",
+              "name": "Payment Terms",
+              "value": "={{ $json.body.payment_terms }}",
+              "type": "string"
+            },
+            {
+              "id": "56cfe9ad-eb1e-4e42-9127-eb309e2b0ec0",
+              "name": "Timeline",
+              "value": "={{ $json.body.timeline }}",
+              "type": "string"
+            },
+            {
+              "id": "c85b3f43-83a2-42fd-853e-ee96220a3642",
+              "name": "Start Date",
+              "value": "={{ $json.body.start_date }}",
+              "type": "string"
+            },
+            {
+              "id": "b78b5f65-74fa-457d-b8a8-c2b80fa75eeb",
+              "name": "End Date",
+              "value": "={{ $json.body.end_date }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        624
+      ],
+      "id": "78fbfeb0-61d0-4a74-85ad-c938f1aa8055",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields').item.json['Client Email'] }}",
+        "subject": "Your Contract with Yasha Automation Services",
+        "emailType": "text",
+        "message": "=Hi {{ $('Edit Fields').item.json['Client Name'] }},\n\nThank you for confirming the engagement. Attached is your contract covering the full scope of work, deliverables, payment terms, and timeline as discussed.\n\nPlease review the attached document carefully. Once you are ready to proceed, sign and return a copy at your convenience.\n\nIf anything in the contract needs clarification or adjustment, reach out, and we will sort it out before work begins.\n\nLooking forward to working with you.\n\nBest regards,\n{{ $('Edit Fields').item.json['Service Provider Name'] }}",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        528
+      ],
+      "id": "7af92ff5-1973-4a54-a467-fedbd6ef8203",
+      "name": "Send a message2",
+      "webhookId": "6fa07ddd-377f-418f-b9fe-388fa74c5331",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qQyTlk2zd5ntgVbx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ARY5H3RME",
+          "mode": "list",
+          "cachedResultName": "new-clients"
+        },
+        "text": "=New Contract Sent\n\nClient: {{ $('Edit Fields').item.json['Client Name'] }}\nContract Value: {{ $('Edit Fields').item.json.Currency }} {{ $('Edit Fields').item.json['Contract Value'] }}\nTimeline: {{ $('Edit Fields').item.json.Timeline }}\nStart Date: {{ $('Edit Fields').item.json['Start Date'] }}\nEnd Date: {{ $('Edit Fields').item.json['End Date'] }}\n\nContract PDF: {{ $('Edit Fields1').item.json['Google Drive Folder Link'] }}\n\nStatus: Sent",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        2112,
+        720
+      ],
+      "id": "7925b287-25d0-401c-9bd2-99285aacf444",
+      "name": "Send a message3",
+      "webhookId": "61d2c757-fec2-4479-909c-4e9b9e92c696",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1FW9aR2BA4hQDuUcy9l5eP9Pq8FskpxBLOII9qIkeefE",
+          "mode": "list",
+          "cachedResultName": "Secure Client Contract Generation & Document Delivery System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FW9aR2BA4hQDuUcy9l5eP9Pq8FskpxBLOII9qIkeefE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FW9aR2BA4hQDuUcy9l5eP9Pq8FskpxBLOII9qIkeefE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client Name": "={{ $('Edit Fields').item.json['Client Name'] }}",
+            "Client Email": "={{ $('Edit Fields').item.json['Client Email'] }}",
+            "Contract Value": "={{ $('Edit Fields').item.json['Contract Value'] }} ",
+            "Currency ": "={{ $('Edit Fields').item.json.Currency }}",
+            "Start Date ": "={{ $('Edit Fields').item.json['Start Date'] }}",
+            "End Date": "={{ $('Edit Fields').item.json['End Date'] }}",
+            "Status ": "SENT",
+            "Drive Link": "={{ $('Edit Fields1').item.json['Google Drive Folder Link'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Client Email",
+              "displayName": "Client Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contract Value",
+              "displayName": "Contract Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency ",
+              "displayName": "Currency ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Start Date ",
+              "displayName": "Start Date ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "End Date",
+              "displayName": "End Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status ",
+              "displayName": "Status ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive Link",
+              "displayName": "Drive Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2336,
+        528
+      ],
+      "id": "c9e8b890-8502-4bff-81a1-8fc636b14464",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aMUzh4ylN1iQSalh",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Client Agreement\n\nClient Name: {{ $json['Client Name'] }}\n\nClient Email: {{ $json['Client Email'] }}\n\nService Provider Name: {{ $json['Service Provider Name'] }}\n\nScope Of Work: {{ $json['Scope Of Work'] }}\n\nDeliverables: {{ $json.Deliverables }}\n\nContract Value: {{ $json['Contract Value'] }}\n\nCurrency: {{ $json.Currency }}\n\nPayment Terms: {{ $json['Payment Terms'] }}\n\nTimeline: {{ $json.Timeline }}\n\nStart Date: {{ $json['Start Date'] }}\n\nEnd Date: {{ $json['End Date'] }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "systemMessage": "=You are a professional contract drafting assistant for Yasha Automation Services, a business that designs and builds AI-powered workflow automation systems for clients.\n\nYou will receive structured engagement details for a confirmed client deal. Your task is to draft a complete, professional service contract based on those details.\n\nThe contract must include the following sections, in this order:\n\n1. PARTIES INVOLVED\nState the full legal names of the service provider and the client, using the service_provider_name and client_name fields provided.\n\n2. SCOPE OF ENGAGEMENT\nDescribe the work being performed, based on the scope_of_work field. Write this in clear, professional language, expanding briefly on what is provided without inventing details not present in the input.\n\n3. DELIVERABLES\nList the specific deliverables from the deliverables field as a clean, itemized list.\n\n4. PAYMENT TERMS\nState the total contract value, currency, and payment structure exactly as provided in contract_value, currency, and payment_terms.\n\n5. TIMELINE\nState the engagement start date, end date, and overall duration based on start_date, end_date, and timeline.\n\n6. STANDARD CLAUSES\nInclude brief, standard professional service clauses covering confidentiality, ownership of work upon full payment, and a limitation of liability. Keep these concise and generic, not legal advice, simply standard professional boilerplate appropriate for a small service engagement.\n\n7. SIGNATURES\nInclude a closing section with signature lines for both the service provider and the client, each with a name line and a date line.\n\nRules:\n- Do not invent contract terms, dates, or figures that were not provided in the input data.\n- Write in formal, professional contract language, not conversational tone.\n- Do not include any commentary, explanation, or notes outside the contract itself. Output only the contract text.\n- Do not use markdown formatting symbols like asterisks or hashtags in the output, since this text will be converted directly into a PDF document.\n- Use clear section headers in plain capitalized text, for example PARTIES INVOLVED, not markdown headers."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        624
+      ],
+      "id": "82b2ed06-3424-4697-9915-291f5b25054b",
+      "name": "Message a model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Jj05xAFibMYXnCFg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "simple": false,
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('Message a model3').item.json.content.parts[0].text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        624
+      ],
+      "id": "28e09a87-9383-43c9-b651-862f67fe86a9",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "BSisbpWyoIAlc2aU",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "={{ $json.id }}",
+        "title": "={{ $json.name }} Contract"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        624
+      ],
+      "id": "eeaf37c8-9eb1-461a-a055-53b6a328b9f8",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "BSisbpWyoIAlc2aU",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Edit Fields').item.json['Client Name'] }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1NXZP8rD6X8MtWkKYlVkdyxDQwwtRBgZw",
+          "mode": "list",
+          "cachedResultName": "Business Contract",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1NXZP8rD6X8MtWkKYlVkdyxDQwwtRBgZw"
+        },
+        "options": {
+          "simplifyOutput": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        992,
+        624
+      ],
+      "id": "c3a89df5-9b3e-41ec-9bf1-0f8a233ca11c",
+      "name": "Create folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "st1mWStma6WBSuuh",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19392db9-5092-45a2-87a0-82672d8e7e85",
+              "name": "Google Drive Folder Link",
+              "value": "={{ $('Create folder').item.json.webViewLink }}",
+              "type": "string"
+            },
+            {
+              "id": "210a27eb-5a95-49c1-9278-cdc266827d1e",
+              "name": "Google Drive Folder Id",
+              "value": "={{ $('Create folder').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "74b673c7-3086-4d29-9ab2-ae8e35282717",
+              "name": "File Id",
+              "value": "={{ $('Create a document').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "4aa8ceb2-c30d-4099-b9a2-98635c874e46",
+              "name": "File Name",
+              "value": "={{ $('Create a document').item.json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1664,
+        624
+      ],
+      "id": "3aa34dd8-5e37-4888-b876-4249e877c735",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json['File Id'] }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1888,
+        624
+      ],
+      "id": "11c26f2c-dfcb-4758-95df-11841bcac2f6",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "st1mWStma6WBSuuh",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ARY5H3RME",
+          "mode": "list",
+          "cachedResultName": "new-clients"
+        },
+        "text": "=Unauthorized Contract Request Blocked\n\nAn incoming request to the Contract Generation webhook was rejected due to a missing or incorrect secret code.\n\nTime: {{ $now }}\n\nSource IP: {{ $('Webhook').item.json.headers['x-forwarded-for'] }}\n\nNo contract was generated, and no data was processed beyond this point.\n\nIf you were expecting this request, verify the secret code being sent matches the one configured in the system. If you were not expecting this request, no action is needed; it was automatically blocked.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        400,
+        816
+      ],
+      "id": "eded4544-3617-4a45-a853-157bdb9f012c",
+      "name": "Send a message",
+      "webhookId": "61d2c757-fec2-4479-909c-4e9b9e92c696",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mgdONQomrvFw62Zr",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "yasha-n8n.duckdns.org",
+            "user-agent": "PostmanRuntime/7.56.1",
+            "content-length": "651",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "cache-control": "no-cache",
+            "content-type": "application/json",
+            "postman-token": "082b4cb6-8025-42fd-9469-d9d5b181aab8",
+            "secret-code": "yasha234",
+            "x-forwarded-for": "34.232.9.233",
+            "x-forwarded-host": "yasha-n8n.duckdns.org",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "client_name": "Yami Tech",
+            "client_email": "joshuaadenugaa@gmail.com",
+            "service_provider_name": "Yasha Automation Services",
+            "scope_of_work": "Design and deployment of an AI-powered lead qualification and CRM enrichment system, including workflow setup, testing, and one round of revisions",
+            "deliverables": "Fully functional n8n workflow, system documentation, and one training session",
+            "contract_value": "4200",
+            "currency": "USD",
+            "payment_terms": "55% upfront deposit, 50% due on completion",
+            "timeline": "6 weeks from contract signing to final delivery",
+            "start_date": "2026-10-05",
+            "end_date": "2026-11-15"
+          },
+          "webhookUrl": "https://yasha-n8n.duckdns.org/webhook-test/0f46e33d-e685-4f6c-a754-51d83e9a4df5",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model3": {
+      "main": [
+        [
+          {
+            "node": "Create folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        []
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create folder": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d0c93ba7-8a67-460b-9c56-9ae2cd99c46c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9be227d2be040d3818c4884245cdf42348b37e3fab9f8e6e95822621d82d486c"
+  },
+  "nodeGroups": [],
+  "id": "31k3ZKSgz2emRAGj",
+  "tags": []
+}
